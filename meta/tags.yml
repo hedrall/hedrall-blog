@@ -1,0 +1,21 @@
+tags:
+#  - slug: document
+#    name: document
+#  - slug: mock
+#    name: mock
+#  - slug: style
+#    name: style
+#  - slug: license
+#    name: license
+#  - slug: mdx
+#    name: mdx
+#  - slug: markdown
+#    name: markdown
+  - slug: front
+    name: フロント
+  - slug: infra
+    name: インフラ
+  - slug: cdk
+    name: AWS CDK
+  - slug: typescript
+    name: TypeScript
