@@ -17,6 +17,7 @@
 .content a {
   color: blue;
   text-decoration: underline;
+  word-break: break-all;
 }
 
 .content h1 {

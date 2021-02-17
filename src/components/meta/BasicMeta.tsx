@@ -32,6 +32,7 @@ export default function BasicMeta({
             : config.site_keywords.map((it) => it.keyword).join(",")
         }
       />
+      <meta name="viewport" content="width=device-width,initial-scale=1" />
       {author ? <meta name="author" content={author} /> : null}
       <link rel="canonical" href={config.base_url + url} />
 
