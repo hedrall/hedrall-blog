@@ -1,7 +1,7 @@
 {
-  "base_url": "https://wutali-nextjs-netlify-blog.netlify.app",
-  "site_title": "Next.js Netlify Blog",
-  "site_description": "Next.js blog template for Netlify",
+  "base_url": "https://blog.hedrall.work",
+  "site_title": "hedrallの技術ブログ",
+  "site_description": "フロントエンドを中心に雑食です。",
   "site_keywords": [
     {
       "keyword": "Next.js"
@@ -11,9 +11,12 @@
     },
     {
       "keyword": "React"
+    },
+    {
+      "keyword": "AWS CDK"
     }
   ],
-  "posts_per_page": 5,
+  "posts_per_page": 10,
   "twitter_account": "@_hedrall",
   "github_account": "hedrall"
 }

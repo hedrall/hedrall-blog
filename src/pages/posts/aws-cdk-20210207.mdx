@@ -36,7 +36,8 @@ AWS CDKは2019/07にGAしたばかりの新米のAWSインフラのプロビジ�
 一応、PythonやJavaなどの他の言語からも使用できますが、CDKそのものはTypeScriptで実装されており、
 各言語のパッケージは[jsii](https://github.com/aws/jsii)というAWS独自のコンパイラを使用して変換されています。
 (jsiiによってTypeScriptの記述も完全に自由ではなく、一部制約されています)。
-ただし、AWSのSAさんがDevDayに発表されているのを見た記憶では、「顧客の要望によりPythonなども使えるようにしたが、TypeScriptがあくまで推奨」と言っていました。
+
+> ただし、AWSのSAさんがDevDayに発表されているのを見た記憶では、「顧客の要望によりPythonなども使えるようにしたが、TypeScriptがあくまで推奨」と言っていました。
 
 AWS CDKの実行すると、最初にCloudFormationテンプレートが排出され（デフォルトでcdk.out）、そのテンプレートをCloudFormationで実行する形になるため、
 あくまでAWS標準のIasC機能を使用する互換性の安心感があります。
