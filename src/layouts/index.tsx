@@ -21,6 +21,7 @@ type Props = {
   description: string;
   tags: string[];
   author: string;
+  image: string;
 };
 export default function Index({
   title,
@@ -29,6 +30,7 @@ export default function Index({
   author,
   tags,
   description,
+  image
 }: Props) {
   const keywords = tags.map((it) => {
     let foundTag = getTag(it);
@@ -53,6 +55,7 @@ export default function Index({
           url={`/posts/${slug}`}
           title={title}
           description={description}
+          image={image}
         />
         <JsonLdMeta
           url={`/posts/${slug}`}

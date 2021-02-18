@@ -3,6 +3,7 @@ slug: "esbuild-2021-02-14"
 title: "さっくりとesbuildを調査してみた"
 date: 2021-02-14
 author: hedrall
+image: "/images/esbuild/logo.png"
 tags:
   - esbuild
   - typescript
@@ -60,8 +61,12 @@ nextやnuxtなどフレームワークで初期プロジェクトを構築し、
 特に本番系でしか出ないエラーに遭遇した際は本当に泣くしかありませんw 数分(數十分)かけてビルドして、修正して、もう一回ビルドという経験をされている方も多いと思います。
 
 この様に中規模以上のフロントエンド開発経験者であれば、「ビルドの遅さ」との戦いは開発プロセスの根本的な課題であることが実感としてあると思います。
-よって、この部分が解決されるというのはまさにエポックメイキングで、夢の様な話だなぁと感じます。
+よって、この部分が解決されるというのは正にエポックメイキングで、夢の様な話だなぁと感じます。
 （本当かなぁ？）
+
+esbuildの調査に当たっては[アーキテクチャー](https://github.com/evanw/esbuild/blob/master/docs/architecture.md)なども見てみましたが、
+[the-super-tiny-compiler](https://github.com/jamiebuilds/the-super-tiny-compiler)を読んだ程度では全く知識が足りずさっぱりでした、、w
+そのせいか、開発は殆どEvan一人で進めている様です。
 
 ちなみに、esbuildは2021/01時点でスター数が19kなので、彗星のごとく現れたということが分かります。
 さらにランキング3`vita`はesbuildに依存しています。vueはビルドプロセスが独特なので、esbuildとは別のレイヤーで対応するべきとVueのEvanとesbuildのEvanが
