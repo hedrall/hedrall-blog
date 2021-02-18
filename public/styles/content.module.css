@@ -41,12 +41,15 @@
 }
 
 .content pre {
-  display: block;
-  background-color: rgba(27, 31, 35, 0.05);
-  line-height: 1.25rem;
-  padding: 1rem;
-  overflow: auto;
-  margin: 1.75rem 0 0 0;
+  display:          block;
+  background-color: #2b2b2b;
+  color:            white;
+  font-size: 15px;
+  font-weight: bold;
+  line-height:      1.25rem;
+  padding:          1rem;
+  overflow:         auto;
+  margin:           1.75rem 0 0 0;
 }
 
 .content pre code {
