@@ -34,6 +34,20 @@ export default function BasicMeta({
       />
       {author ? <meta name="author" content={author} /> : null}
       <link rel="canonical" href={config.base_url + url} />
+
+      {/* Global site tag (gtag.js) - Google Analytics */}
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-KQWZ083Z2S"></script>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+             window.dataLayer = window.dataLayer || [];
+             function gtag(){dataLayer.push(arguments);}
+             gtag('js', new Date());
+          
+             gtag('config', 'G-KQWZ083Z2S');
+          `,
+        }}
+      />
     </Head>
   );
 }
