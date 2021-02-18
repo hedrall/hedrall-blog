@@ -1,0 +1,298 @@
+---
+slug: "future-cast-202012"
+title: "[Nuxt + Firebase + Lambda] で実現したLow CostなSSR環境 (結構辛い)"
+date: 2020-12-01
+author: hedrall
+tags:
+  - typescript
+  - firebase
+  - nuxt
+---
+
+> Qiitaに投稿したものです。
+
+## 概要
+
+先日個人で開発した **[FUTURE CAST](https://future-cast.jp)** をリリースしました！
+
+システムの構成としては、Firebase + Nuxt.jsを採用しております。
+
+Firebaseは非常に使いやすく開発は順調に進み、およそ2.5ヶ月ほどの朝活でサイトをリリースすることができたのですが、その後、重大な問題が発覚しました。それは、Googleに全くインデックスされないということです。
+
+FirebaseはGoogleのサービスですし、クローラーも年々強化されている中で完全に高を括っていましたが、Firebaseを利用したSPAサイトでSEOを実現するのは困難なようです。そこで、サーバレスでSSRする事で解決を検討しましたが、これがまた地獄で、実現までには多くの困難がありました。
+
+本投稿では私が問題にあたり、SSRで解決するまでの流れをご紹介いたします。
+
+なお、進め方や目的感を明確にするため、経緯を細かに共有したいと思いますので、少し長い記事になります。必要に応じて斜め読みしてみてくださいb
+
+**本題は 「4章」 以降です。**
+
+## 結論
+
+- FirebaseのSPAではSEOが取れないので、SSRする
+- LambdaでNuxt.jsアプリをSSRできる
+- LambdaからSSRホストするのは結構大変
+
+## サイト概要
+
+今回作成したサイトはこちらになります。
+
+https://future-cast.jp
+![TopPage](/images/future-cast/top.png)
+
+
+サイトの仕様としてはざっくり以下の通りです。
+
+1. ユーザが未来を予想する問題を投稿する ex) 明日の天気は？ [晴れ, 曇り, 雨, その他]
+2. ユーザが問題に予想する ex) [晴れ]
+3. ユーザが問題に関する事実を投稿
+4. 管理者が事実を承認し、予想が的中したユーザにポイントを分配する
+
+その他細かな機能も多数あり、興味がある方は一度触ってみてください。Google連携ログインが簡単です。
+
+## 0. SPAサイトをオープン
+
+2.5ヶ月の朝活の末ようやく上記サイトをOPしました。次に検討したのは、万が一トラフィックが増えた場合に個人で大きな費用を捻出するのが怖いので、リスク回避としてAdSenseで広告を入れようという事です。
+
+そこでAdsenseからサイトに審査を出したのですが、翌日には棄却された旨連絡がきました。まあ、初回だしこんなもんかと思いつつ、棄却内容が「no content」となっていたため不審に感じ、Search Consoleでライブテスト（昔のfetch as google)を試して見ました。すると、確かに画面が真っ白な状態でスクリーンショットが取られていることが判明しました。正確にはヘッダーやメニューなどの静的な部分は表示されておりますが、肝心のコンテンツがロード中の状態です。
+
+(ちなみに、Page Speed Insightでも同じ状態でしたが、不思議なことにweb page testではちゃんとコンテンツが描画されていました。)
+
+このままでは広告が設置できないし、何よりGoogle検索にインデックスもされないので、どうしたらGoogleがコンテンツの描画を待ってくれるか調査と対策が必要になりました。
+
+## 1. データのfetchタイミングを調整
+
+まずは、単純にパフォーマンスの問題を睨みました。当初作成したSPAアプリはPageコンポーネントのcreatedフックでコンテンツのフェッチを行っていました。これをアプリケーション構築のより早い段階で実行するために、routing middle wareでフェッチした内容をStoreに格納する実装に変更しました。結果は❌  。
+
+（結果の検証は全てhttps://future-cast.jpで公開したサイトでサチコのライブテストを実行しています。）
+
+0の時と同じ状態になりました。もしかしたらガワ部分の描画が終了したことによりGoogle botのレンダリングエンジンも停止しいるのかな？と考えmiddle ware部分でfetchをawaitする形の実装にも変更しましたが、今度はガワ含めて何も表示されていない状態でスクショされるようになりました。
+
+そのほか、bundle analyzerを参考にバンドルサイズを小さくするなど、パフォーマンスチューニングをしてみましたが、やっぱり❌ 。
+
+これは根拠のない(公表もされていない？)話ですが、私のアプリケーションに関してはGoogle botはonloadイベントのタイミング以降のレンダリングを行っていない様に見えました。もしそれが真の場合はどうしてもFirebaseのSPAでサイトのSEOを実現するのは困難と思われます。
+
+これ以上効果的なパフォーマンスチューニングも見当たらなかったので、SPAでのホストを諦めました。
+
+ああ、さよならJAMStack、、、
+
+## 1.2 (番外編)SPAの検討
+
+netlifyで最近無料で利用できる様になった、pre rendering機能も試してみました。結果、コンテンツはpre renderされませんでした。やはり対象範囲はSEO用ヘッダの描画程度なのかな？詳しい仕様が見えないので、深掘りはしませんでした。
+
+## 2 SSRを検討
+
+上記の通りSPAでは八方塞がりになってきたため、ここは思い切ってSSRホストに切り変えようと考えました。最近は「SSRは不要（SSGで十分）」という意見も多くなってきましたが、今回の私のサイトはCGM的な要素が大きいので、常に動的にコンテンツが生成される想定ではSSGで対応する事は難しいと考えられます。
+
+SSRとなるとまず検討しなくてはならないのがインフラです。サーバを立てるのが一番簡単ですが、例えばAWS ECSなどを使用すると小さなインスタンスでも月3000円ほどはかかると思います。個人的な月々の出費としては割と大きく感じられます（dアニメストアの8倍）。AppEngineなどでインスタンスをオンデマンドで利用する方法も考えられますが、この場合コールドスタートによるパフォーマンス劣化を検討する必要があり、むしろSEO的に怖い可能性があります。以上から、サーバーレス構成で料金を抑えつつ、コールドスタートの問題が少ないインフラ構成を検討しました。
+
+これに対して、Firebase Functionsを利用してSSRする方法に関してはいくつかQiita記事も上がっており、取り組みやすいかと思われました、、、ザワッ、、
+
+## 3 早速Firebase FunctionsでSSR
+
+しかし、コールドスタートが遅すぎる、、
+体感的には8~10秒ほどでしょうか。
+
+さらに、全てのファンクションで共通のコードをデプロイする仕様なので、API系で使用しているFunctionsにNuxtSSR用のファンクションのファイルサイズが影響しそう、、でやめました。(良い解決方法もなさそう)
+
+CloudFunctionsのコールドスタートは割と遅いです。これも明確なソースがないため感覚値にはなってしまう部分ですが、AWS Lambdaの方がコールドスタートもデプロイなども非常に高速に動作する印象です。バックエンドがGoogleなのでGCPで完結させたいという気持ちはありましたが、必要に迫られてしまったので、Lambdaを使用したSSRホストを検討しました。
+
+## 4 LambdaでSSRホスト!
+
+ここからがむしろ本題です！LambdaでNuxtをSSRするには非常に多くのポイントが要求されました。つまづいた経緯と共に解決策を紹介します。
+
+### 4.1 ソースコードがで巨大でデプロイできない
+
+Nuxt.jsをExpressからホストする方法は公式に記載がありますよね。
+
+[https://ja.nuxtjs.org/docs/2.x/internals-glossary/nuxt-render/](https://ja.nuxtjs.org/docs/2.x/internals-glossary/nuxt-render/)
+
+この方法についての確認ですが、 `npm run build` で `.nuxt` ディレクトリが作成されますが、`.nuxt/dist/server` の内容を `loadNuxt` 関数が読み込んで実行してくれる様です。
+
+なので、apiのコードと `node_modules`, `.nuxt` のコードを一つのZIPファイルに固めてしまえば、Lambdaでも動くことになります。（もちろん `aws-serverless-express` などを使用して、`Express` 自体がLambdaで動く様に対応もします。)
+
+```
+⬇️　zip内のイメージ
+dist/
+   ├ package.json
+   ├ server/index.js
+   ├ .nuxt/
+   └ node_modules
+```
+
+しかし、このZIPのサイズが50MBを超えることによりデプロイに失敗しました。Lambdaには**コードの合計サイズがzipで50MB以内かつ生データで250MB以内**という制約があります(ここには `Lambda Layer` の分もカウントされます)。
+
+このため、Zipファイルの容量削減方法を検討する必要がありました。
+
+### 4.2 Server Bundleの調整
+
+ファイルサイズの問題は `node_module` が巨大すぎることが主な原因です。そもそも `npm run build` で生成されるバンドルに関してですが、デフォだとclient用のバンドルにはライブラリ群がバンドルされていますが、server用のバンドルで使用しているライブラリ群は全てexternalに指定されております。つまり、実行時に `node_modules` から読み込まれますので、サーバサイドで必用なライブラリ群は全て `node_modules` として、ZIPファイル内に持つ必用があります。しかし、不運なことに `nuxt` と `firebase(SDK)` だけでも `node_modules` の総量が50MBの制約を超過します。
+
+なので、 `node_modules` のライブラリ群を `Webpack` でバンドルする事で、ファイルサイズを削減していく必要があります。
+
+`Nuxt` のサーババンドルにライブラリを含める方法はこちらにありました。
+
+https://stackoverflow.com/questions/50700680/nuxt-start-requires-node-modules-to-be-present-in-order-to-run
+
+```bash
+nuxt-ts build --standalone
+```
+
+実は公式ドキュメントにも乗っていませんが、 `standalone` フラグが使えるようです！これで、serverバンドルから `node_modules` を駆逐していけそうです！
+
+### 4.3 ビルドが通らんぞ...
+
+しかしながら、 `Nuxt` や `firebase` などをバンドルする際にエラーが出ました。色々と調査をしてみました。が、**私は諦めました**。(できた方、教えて！、、)
+結論をいうと、私の場合は `nuxt` と `firebase-admin` だけをサーババンドルのexternalとしました。
+
+私のビルド設定は以下の通りです。
+
+```typescript
+// nuxt.config.ts
+build: {
+    // CSSはS3から配信して、バンドルを軽くする
+    extractCSS: true,
+    extend( config, ctx ) {
+
+      config.externals = {
+        // chart.jsから入ってくる
+        // 不要なライブラリは除外
+        moment: 'moment',
+        // サーバサイドで、'firebase-admin'だけcommonjsで読み込む設定
+        // つまり, import * as admin from 'firebase-admin'
+        // => const admin = require( 'firebase-admin )
+        // に変換される
+        ...(
+          ctx.isServer ?
+            { 'firebase-admin': 'commonjs firebase-admin' } :
+            {}
+        )
+      };
+    }
+  }
+```
+
+これにより、clientでは `firebase` を使用し、server sideでは `firebase-admin` を使用するということを徹底する必要があります。
+
+### 4.4 client sideは `firebase(SDK)`, server sideは `firebase-admin`
+
+`Nuxt` で `firebase(SDK)` を直接参照するコード( ```import * as firebase from 'firebase';``` )を記述した場合、Universal JavaScriptであるNuxtでは、server bundleにも `firebase` がバンドルされてしまうことになります。これは容量に問題としても、ビルド設定の困難さからいっても適切でありません。
+
+client sideで `firebase` を使用する場合は `Nuxt` のモジュール [@nuxtjs/firebase](https://firebase.nuxtjs.org/) が存在するので、これを使用することで簡単にclientのみにバンドルできます。
+
+```typescript
+// nuxt.config.ts
+modules: [
+    [
+      '@nuxtjs/firebase',
+      {
+        config: {
+          // 環境変数はdotenvなどで読み込む
+          apiKey: process.env.API_KEY,
+          authDomain: process.env.AUTH_DOMAIN,
+          databaseURL: process.env.DATABASE_URL,
+          projectId: process.env.PROJECT_ID,
+          storageBucket: process.env.STORAGE_BUCKET,
+          messagingSenderId: process.env.MESSAGING_SENDER_ID,
+          appId: process.env.APP_ID,
+          measurementId: process.env.MEASUREMENT_ID
+        },
+        services: {
+          auth: true,
+          firestore: true,
+          functions: true,
+          analytics: true,
+        }
+      }
+    ]
+  ],
+```
+
+`@nuxtjs/firebase` はコンテキストに `firebase` のインスタンスを埋め込んでくれるので、必ず `Component` や `Store` で `this.$fire.firestore`, `this._vm.$fire.functions` などの様に使用します。
+
+一方server sideでは `firebase-admin` だけを触る様にます。フロントにバンドルされない様コードを分離するにはpluginを使うのが良さそうです。
+
+```typescript
+// ~/plugins/firebase-admin.ts
+import Vue from 'vue';
+import admin from 'firebase-admin';
+
+// サービスアカウントのクレデンシャル
+const serviceAccount = require( '../../credentials/service-account.json' );
+
+// 2回目以降初期化するとクラッシュするので、
+// すでに初期化済み出ないか確認する
+if ( !admin.apps.every( app => app?.name !== 'admin' ) ) {
+  admin.initializeApp( {
+    credential: admin.credential.cert( serviceAccount ),
+    databaseURL: process.env.DATABASE_URL
+  }, 'admin' );
+}
+
+Vue.prototype.$admin = admin;
+
+// アンビエント宣言により、VueComponentでthis.$adminが型補完される様にする
+declare module 'vue/types/vue' {
+  interface Vue {
+    $admin: typeof admin;
+  }
+}
+```
+
+```typescript
+// nuxt.config.ts
+plugins: [
+    // サーバのみにバンドル
+    { src: '~/plugins/firebase-admin', mode: 'server' }
+  ],
+```
+
+`firebase-admin` をlambdaで使用する場合はGCPのサービスアカウントで認証する必用があります。
+
+また、 `Store` の `Action` からアクセスする際は `this._vm.$admin` でアクセス可能ですが、アロー関数では `this` がバインドされないので注意してください。
+
+### 4.5 補足
+
+以上の対応により、ようやく**50MBの制約を切るバンドルを作成する事ができました🎉**。
+そのほか引っかかった点を補足します。
+
+**4.5.1 assetsが大きくなると50MBを超過する**
+
+実は.nuxt配下でSSRに必要なのは、.nuxt/dist/serverだけです。そのほかはS3などから配信します。必要なファイルは.nuxtとstaticディレクトリです。リクエストの振り分けはCloudFrontを使用すると楽です。振り分けかたは以下の通りです。
+
+_nuxtへのリクエスト ⇒ S3 の.nuxt/dist/client配下に転送
+
+.jpg, .ico, .css, ...へのリクエスト ⇒ S3のstatic配下に転送
+
+それ以外 ⇒ SSR用Lambdaに転送
+
+**4.5.2 sitemapは**
+
+sitemapは@nuxtjs/sitempaを使用したかったが、lambdaへホストすると気は使用できない様子。@nuxtjs/sitemapはsitemapに依存しているので、sitemapを利用してExpress上で実装しました。
+
+**4.5.3 フロントからfunctionsの呼び出しがCORSで失敗する**
+
+GCPとLambdaで環境が違うためCORSが出ているものと勘違いし、デバッグに時間がかかりました。私のエラー原因はリージョンを指定指定ない事でした。CloudFunctionsからホストしている場合と違いLambdaにはGCPのリージョンは当然指定されていないので、Functionの実行時にリージョンを指定してあげる必要がありました。
+
+```bash
+import * as _functions from 'firebase-functions';
+export const functions = _functions.region( 'asia-northeast1' );
+```
+
+**4.5.4 CloudStorageで料金が微妙に発生するんだけど、、**
+
+完全に番外編ですが、なんとCloudFunctionsはCloudStorageにイメージを保存するようです。GB単位で消費されていました。
+
+## まとめ
+
+以上、なんとか50MB以内のzipファイルを完成させ、Firebase+Nuxt構成をLambdaからホストする事に成功しました！
+
+実際Lambdaのコールドスタートの時間も少しかかりますが、メモリを調整する事で、**3~5秒では起動するように**なりましたし、CloudFrontも今回の構成で必須だったので、個人開発としては満足なレベルです。（もっと大規模な案件でも、warm upさえすればいいので。）
+
+料金はアクセスもほとんど現状では、**ほぼ0円**です。CloudFrontの配信に数円と、Route53のホスティッドゾーンに50円(Firebase Hostingなら0円ですが)といったところです。
+
+色々大変でしたが、ビルド設定や、設計方法は次回以降も使い回せますし、何より固定費ほぼ0でSEO対策までできてしまうのは魅力的な部分かと思いますので、皆さんもぜひご参考ください！
+
+**ちなみにAdSenseはまだ通っていませんw 単純にコンテンツ量の問題もあったようです、、w**
+
+以上

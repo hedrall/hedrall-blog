@@ -19,3 +19,7 @@ tags:
     name: AWS CDK
   - slug: typescript
     name: TypeScript
+  - slug: firebase
+    name: Firebase
+  - slug: nuxt
+    name: Nuxt.js
