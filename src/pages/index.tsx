@@ -13,7 +13,7 @@ export default function Index() {
       <div className="container">
         <div>
           <h1>
-            Hedrallの技術ブロ<span className="fancy">.</span>
+            Hedrallの技術ブログ<span className="fancy">.</span>
           </h1>
           <span className="handle">@nextjs-netlify-blog</span>
           <h2>フロントエンドを中心に雑食です。</h2>
