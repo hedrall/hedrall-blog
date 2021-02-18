@@ -1,0 +1,485 @@
+---
+slug: "nuxt-2020-12-28"
+title: "[Nuxt.js入門] 全体像をざっくり掴むためのポイントまとめ"
+date: 2021-12-28
+author: hedrall
+tags:
+  - typescript
+  - nuxt
+---
+
+> Qiitaに投稿した記事です
+
+# 概要
+
+ これからNuxt.jsで開発を始める方向けに、最初に抑えておきたいポイントを個人的にまとめます。私自身としてはAngularアプリの初期構築業務の経験があるのですが（数万行単位で書いてました）、自分が新チームの技術選定をするタイミングでNuxt.jsを選定しました。ある程度SPA開発の知識はありましたが、最初は各フレームワーク毎に結構抑えどころというか癖見たいのを感じました。そんな、親切で日本語な公式読んでもすぐには手の動かない並エンジニアの自分の様な方向けにまとまったチートシート的な感じになればいいなと思っています。
+
+// 2020/11/26追記
+記述内容を現状に合わせて見直しました。
+本記事は全体像の把握を目的としており、記述内容の強化が簡便性を損なわない様、最初は読み飛ばしても問題ないと思われるトピックには ⚫️ アイコンをつけております。
+
+# Nuxt.jsとは
+
+- Vueベースのフルスタックのフロントエンドフレームワーク
+    - 他でメジャーどころは、Angular, Next.jsなど
+    - (Angularはフルスタック感が強い)
+- 普通のSPA開発をしながらSSR, SSGを簡単に実装できる
+- Nuxtコミュニテューが開発する純正？モジュールが充実
+    - axios(APIリクエスト), Bulma(CSSフレームワーク）, PWA, ...など
+    - こちらにまとまってます。　https://github.com/nuxt-community/awesome-nuxt
+    - Vue.jsで動作するStorybookなどを併用する場合などは、Nuxt用モジュールとの相性が悪い場合があります。（私はaxiosは普通のやつを使っています。）
+        - (⚫️ NuxtはVuexを使用する事が多いため、StoryBookはStoreのモックなどが手間になります。)
+        - (⚫️ 解決方法としてはReact Hooksと同様な`Vue Hooks`やCompositionAPIで状態管理とビューを分離します。)
+- いろんな言語(AltJsやCSSプリプロセッサ)が使える
+    - Webpackで使用するloaderをインストールするだけのようです
+        - https://ja.nuxtjs.org/faq/pre-processors/
+- ⚫️ SSR用のnodeサーバが設定されているので、サーバミドルウェアでResponse Headerを付け替えたり、認証を挟んだり、APIルートを作ったりという事も簡単にできます。
+
+### TypeScript対応に関して補足
+
+- ~~標準ではcomponents、pagesのみが簡単にts対応可能~~
+- 既存のプロジェクトには3ステップで簡単に導入できます（基本的にTSでの記法はこちらのページで参照できます。）
+    - https://typescript.nuxtjs.org/guide/setup.html
+- ~~新規にプロジェクトを作成する場合はこちらを使用するのも簡単です~~
+    - ~~https://github.com/nuxt-community/typescript-template~~
+    - 現在は`npx nuxt-create-app` コマンドでTS対応プロジェクトの雛形が作れます。
+- .vueファイルのscriptタグには `lang="ts"` を明示的に指定してあげる
+- Vue+TypeScriptでSingle File Componentを書くときの基本を舐めるには[ここの記事](https://mae.chab.in/archives/60167)が参考になりました。
+- ~~middleware, storeなどもts化するのは個別の対応が必要~~
+- Vuexのts化は考慮点が多い
+    - コンポーネント-Vuex間の紐付けは文字列ベースなので、型補完が効かなかったり
+    - 詳しくはここを参照
+        - https://codeburst.io/vuex-and-typescript-3427ba78cfa8
+
+## mode
+
+Nuxt.jsはアプリケーションのビルド方法にモードが存在し、nuxt.config.jsからいつでも設定できます。
+
+> 2020/12/28 追記
+> 2.14.5以降、nuxt.config.jsonから`mode`の指定がなくなり、`ssr`に切り替わっています。
+> `mode: spa` => `ssr: false`, `mode: universal` => `ssr: true`
+
+-
+    - 普通のSPA
+    - `npm run build`でビルドすると、(デフォで) `dist` ディレクトリにSPA様のファイルが出ます
+- universal
+    - いわゆるSSRするモード。(universalの意味はサーバーサイドでも、クライアントサイドでも動作するということ。)
+    - サーバーサイドでHTMLの生成できる所は事前に作りつつ、フロントではSPAとして動く。
+        - (サーバーでの実行結果はjsonにまとめてクライアントサイドに渡しているらしい)
+    - よって、クライアントサイドでの展開が軽い
+    - SEO対策が可能
+    - `npm run build`でビルドした後、'npm run start'でサーバーを起動する事でSSRでホストします
+        - ⚫️ ビルドした生成物をExpressなどのサーバミドルウェアを介してSSRホストする事も可能です
+            - https://ja.nuxtjs.org/docs/2.x/internals-glossary/nuxt-render/
+        - ⚫️ これにより、LambdaやCloudFunctionsを使用したサーバレス環境でもSSRホストが可能になります
+
+ちなみにSSGをする場合はuniversalモードを選択して、`npm run generate`コマンドを実行する事でdistディレクトリにファイルが生成されます。
+SSGはSSRと比べ、生成のタイミングが リクエスト時(SSR) => 事前(SSG) となっているだけなので、universalなjsで記述する必要がある事は同じです。動的なルートでは(デフォでは)SSGモードでは生成されません。
+
+# Hello World
+
+## 新規プロジェクト作成
+
+vueの場合vue-cliで始めるのが基本ですが、
+Nuxtの場合はコミュニティーが開発しているのテンプレートから作成が可能。
+一度下記のコマンドを叩けばわかりますが、一通り必要な周辺ツールも選択できます。
+ここから作りこんでいくのが基本のようです。
+
+```
+npx create-nuxt-app <project-name>
+```
+https://github.com/nuxt/create-nuxt-app
+
+## とりあえずローカルでホスト
+
+```
+cd <project-name>
+npm i
+npm run dev
+```
+localhost:3000にアクセス
+
+## 基本的なテンプレート操作まとめ
+
+### 前提
+
+コンポーネントの記述方法はOption型、Class型、Composition型の３つがあります。
+
+- Option型
+    - 基本形。Vueチュートリアルなどでも紹介されている。引数を指定してVueコンポーネントを生成する。
+- Class型
+    - Class構文を使用する。
+    - 読みやすく一時期最も使用されていたが、管理上の問題などから最新のVue3系でRFCがリジェクトされるなど今後の標準化は期待できない。
+    - しかしながら現状使用しているプロジェクトは多い（はず）。
+- ⚫️ Composition型
+    - Vue3系から導入された、関数コンポーネントにVueの機能をオプトインしながら記述する方法
+    - React Hooksにインスパイヤーされている
+    - 状態とビューを分離でき、管理性が非常に高まる
+    - まだまだ発展途上(本記事では省略します。)
+
+Option型、Class型の場合はSFC(single file component)として、1つの.vueファイルに`<template>`, `<script>`, `<style>`の３つのタグを記述します。
+
+### `<template>`の例
+
+```vue:pages/index.vue
+<template>
+  <section class="container">
+    <!-- テンプレートに変数を出力（片方向バインド） -->
+    <h1>{{title}}</h1>
+
+    <!-- computed関数の戻り値を出力 -->
+    <p>{{test}}</p>
+
+    <!-- 双方向データバインド -->
+    <input v-model="input" />
+
+    <!-- 属性バインド -->
+    <input :disabled="disable" />
+
+    <!-- イベントハンドリング -->
+    <button @click="clickEventHandler">クリック</button>
+
+    <!-- 条件付きレンリング -->
+    <p v-if="isRender">表示されてる？</p>
+
+    <!-- リストレンダリング -->
+    <ul>
+      <li v-for="item in items">{{item}}</li>
+    </ul>
+
+    <!-- コンポーネントを出力 -->
+    <test-component></test-component>
+
+    <p></p>
+  </section>
+</template>
+```
+
+### `<script>`の例
+
+<details>
+<summary>Option型</summary>
+<div>
+
+```vue:pages/index.vue
+<template>
+ // ...上記のテンプレート
+</template>
+
+<!-- TypeScriptを使用する場合は -->
+<!-- <script lang="ts"> -->
+<!-- とする -->
+<script>
+import TestComponent from "~/components/TestComponent"
+export default {
+  mounted() {},
+  components: {
+    TestComponent
+  },
+  computed: { // getterの様に働きます
+    test() {
+      return 'test1'
+    },
+    isRender() {
+      return true
+    }
+  },
+  async asyncData(context) {
+    return {
+      title: 'テストのタイトル',
+      input: '初期値',
+      disable: true,
+      items: Array(10).fill('item')
+    }
+  },
+  methods: {
+    clickEventHandler(event) {
+      console.log(event)
+      console.log(this)
+    },
+  }
+}
+```
+</div>
+</details>
+
+<details>
+<summary>Class型 ( TypeScript )</summary>
+<div>
+
+```vue:pages/index.vue
+<template>
+ // ...上記のテンプレート
+</template>
+
+<script lang="ts">
+  import { Component, Vue } from "nuxt-property-decorator";
+  import TestComponent from "~/components/TestComponent.vue"
+  import { Context } from "~/node_modules/@nuxt/types";
+
+  // 使用するコンポーネントはデコレータで指定
+  @Component( { components: { TestComponent } } )
+  export default class extends Vue {
+    // ライフサイクルメソッドは名前が一致するローカル関数を定義
+    mounted() {
+      console.log( 'mounted')
+    };
+
+    // getter (option型でいうComputed)
+    get test () {
+      return 'test1';
+    }
+    get isRender() {
+      return true;
+    }
+
+    async asyncData( context: Context ) {
+      return {
+        title: 'テストのタイトル',
+        input: '初期値',
+        disable: true,
+        items: Array(10).fill('item')
+      }
+    }
+
+    // ローカルメソッド (options型でいう methods)
+    clickEventHandler( event: MouseEvent ) {
+      console.log(event);
+      console.log(this);
+    }
+  }
+</script>
+```
+</div>
+</details>
+
+### `<style>` の例
+
+```vue:pages/index.vue
+<template>
+  // ...
+</template>
+
+<script>
+  // ...
+</script>
+
+<!-- langでプリプロセッサが指定できる -->
+<!-- SASSを使用する場合は `npm i -D sass-loader node-sass` しておく -->
+<!-- scopedを指定するとCSSがカプセル化されて、コンポーネントの外に影響しなくなる -->
+<style>
+h1 {
+  color: black;
+  // Scopeだけど、子コンポーネントに影響を与えたい場合はdeepセレクタを使用できる。
+  .a /deep/ .b { /* ... */ }
+}
+</style>
+```
+
+## プロパティの説明 (Option型前提)
+
+- asyncData
+    - テンプレートに出力する変数(コンポーネントデータ)を定義する。
+    - universalモードの時、サーバーサイドで実行されます。
+    - このようにサーバーサイドで実行される関数内ではthisにアクセスできないため、引数にcontextを受け取るようになっています。content経由でVueにグローバルで定義されている機能が参照できます。
+        - ex) Vuexのstate(context.store.state), ルーティングパラメーター(context.route.params)。
+        - (クライアントサイドでは通常通りthisを触っているのと同じ動作になります。)
+    - pagesでのみ使用可。
+- computed
+    - ゲッターを配置します。（テンプレートからは関数としてではなく変数として呼び出す。）
+- methods
+    - 普通の関数群を定義。setterやその他の更新処理・操作など。
+- fetch
+    - 以前はざっくりasyncDataとほぼ同だった
+    - Nuxt2.12で全く新しい機能となり、asyncDataと違う使い道を持つ様に
+        - https://qiita.com/miyaoka/items/11fdc03ff591d34a585c
+    - propsに応じたデータのフェッチや、フェッチ中の状態の管理に使用する
+    - SSRの場合は(基本)サーバサイドで事項される
+- created
+    - Vue.jsのCreatedイベントのタイミングで動作する。サーバーサイドとクライアントサイドの `両方` で呼ばれる。
+- mounted
+    - Vue.jsのMountedイベントのタイミングで動作する。universalモードでもクライアントサイドで実行される。windowオブジェクトの操作など、クライアントサイドでだけ動かしたい処理を記述する。
+- components
+    - コンポーネントを呼び出す。
+    - テンプレートで呼び出す時、タグ名はケバブケースになる
+
+（そのほかもいくつかありますが、省略します。）
+
+# Nuxt.jsのファイル構造
+
+- pages
+    - nuxtのアプリケーションの各ページを記載する
+    - ファイル階層がそのままURLになる`
+    - パスパラメータを使用したい場合は以下の通り
+        - `pages/posts/_postId.vue`を作成すると、/posts/1, /posts/2, ...でアクセスができる
+- components
+    - コンポーネントを定義する
+    - ファイル名はアッパーキャメルケース(UpperCamelCase)で宣言しますが、テンプレートから使用する時のタグ名はケバブケース(kebab-case)になる
+- layouts
+    - ヘッダーやフッターなど、所謂テンプレートの「がわ」を定義する
+    - デフォルトでは全ページに`default.vue`が適用される。変更する際は各ページの`header`プロパティで指定する
+- store
+    - Vuexのstoreファイルを格納する(後述)
+- static
+    - 静的に配信したいアセットのうち、webpackに含まないものを配置する
+        - ex) 普通の画像
+- assets
+    - 静的に配信したいアセットのうち、webpackに含むものを配置する
+        - ex) iconなど小さい画像, CSS
+- ⚫️ middleware
+    - Nuxtには通常のミドルウェアとサーバミドルウェアという概念があり、nuxt.config.jsでは別々のプロパティで指定します。
+    - 通常のミドルウェア:
+        - ルーティングに割り込む処理をアプリケーション全体に適用する
+        - ex) アプリ内部の認証、リダイレクト
+    - サーバミドルウェア
+        - サーバへのリクエスト、レスポンスを操作する
+        - ex) サーバへのアクセス制御
+        - ex) response headerを付け替え
+- plugins
+    - グローバルで使用したいライブラリや関数などを登録する
+
+# 基本的な nuxt.config.js の設定
+
+- srcDir
+    - ソースディレクトリは`~`, `*`で参照できる。(エイリアス)
+        - ex) `import TestComponent from "~/components/TestComponent"`
+    - デフォルトはrootディレクトリになるので、必要があれば変更する
+- head
+    - haedの情報を書く
+    - nuxt.config.jsではデフォルト値やtemplate構文を記載して、下記の様に補完する
+        - nuxt.config.jsで設定
+        - layoutで上書き
+        - pageでさらに上書き
+    - hidをつけてあげないと上書きされず、重複してmetaタグなどが出るので注意
+- css
+    - グローバルで当てたいCSSを宣言
+    - scssも読み込める
+    - この中でさらに、ライブラリのCSSなどをimportしてあげると管理が楽です
+- plugins
+    - pluginsフォルダに格納したプラグインをアプリケーションで使える様に登録する
+    - ライブラリの読み込みなどで使用する
+- modules
+    - Nuxt用のモジュール(@nuxt/***)などをアプリケーションで使える様にバンドルに含める
+    - 最適化されたモジュールはbuildModulesに追加するものも多い
+        - それぞれのライブラリを参照してください
+
+# Vuex
+
+アプリケーションの状態管理をするモジュールです。ほとんどのNuxtアプリでは多分必須です。ReactでいうRedux, AngularでいうServiceに相当する部分で、アプリケーションの各所から参照したい状態を管理します。
+~~Vuexの使用方法はクラシックモードとモジュールモードがありますが、v3系からクラシックモードは非対応です。~~
+すでにドキュメントからクラシックモードの記述が消えているので混乱される型は少ないかと思います。
+
+## ファイル構造
+
+store
+ |
+ | --- index.js
+ | --- module1.js
+ | --- module2.js ...
+
+## 基本的な書き方(モジュールモード)
+
+```js:store/index.js
+// 状態変数を宣言する
+export const state = () => ({
+  login: false
+})
+
+// getterを宣言する
+export const getters = {
+  // stateを受け取る
+  login: (state) => state.login,
+}
+
+// stateを変更する処理を記載する
+export const mutations = {
+  // 第一引数にstate、第二引数に任意の変数を受け取る
+  login(state) {
+    state.login = !state.login
+  }
+}
+
+// 処理を記載する （基本的にはここを各vueファイルから触る）
+export const actions = {
+  // 第一引数にcontext, 第二引数に任意の変数を受け取る
+  loginAction({commit}) {
+    commit('login')
+  },
+  nuxtServerInit() {
+    // 特別な名前のaction
+    // index.jsのactionにのみ定義でき、アプリケーション起動時に
+    // 自動で1回実行される
+    // (SSRモードの場合はサーバーサイドで)
+    // マスタの取得などに活用
+  }
+}
+```
+
+pageからの呼び出し方法は下記の通り
+
+```vue:pages/login.vue
+<template>
+  <div>
+    {{login}}
+    <button @click="loginAction">ログイン</button>
+  </div>
+</template>
+
+<script>
+  import { mapGetters, mapActions } from 'vuex'
+
+  export default {
+    computed: {
+      // mapGettersでstoreに宣言したgetterを持ってくる
+      ...mapGetters(['login'])
+    },
+    methods: {
+      // mapGettersでstoreに宣言したactionを持ってくる
+      ...mapActions(['loginAction'])
+    }
+  }
+</script>
+```
+
+stateやmutationsなどはthis.$store.stateやcontext.store.commit( ... )などを使用してコンポーネントから直接触ることもできますが、上記はお行儀よくgetter, actionを通して触る例です。
+また、gettersはthis.store.getters, actionsはthis.store.dispatchで個別に実行することができますが、...mapGettersや...mapActionsを使用して、コンポーネントに差し込んでおく方法がベストプラクティスの様です。
+
+# 余談 Nuxt?, Next?, Angular?
+
+単なる個人的感想です。この三つはよく比較されるのでどれを選定しようかという部分は多くの人が考えていると思います。結論としてはどれを選んでも同じことを実現することが可能ですが、以下の点は考慮していいと思います。
+まず、ReactベースのNextはJSで完結させる思想なので、Viewも含めて全て関数で記述します（JSX(TSX)という簡易記法を使用しますが、実態は関数です）。cssなどもJSで記述するJSSなどの技術もあります。厳密に型管理ができるので保守性能が高いですが、反面、型に関する深い理解が必要になるので、習熟度によっては生みの苦しみが大きいかもしれません。
+Nuxt, Angularは従来のLAMPやらRailsやらのMVCのパターンを単純にフロントエンドにもち入れた感じで、いわゆるテンプレートが存在します。そのため、よくView部分でデザイナーと共有しやすいと言われます。Angularは開始当初からネイティブでTS対応していただけあり型管理は厳密です。一方、Vue系は創始者のエヴァンがJS好きという事もあり、型対応がゆるく、ストアなど妥協が必要な部分もあります。
+~~また、日本語のドキュメントの量として、私の感覚では　Next.js < Angular << Nuxt.js 。当然日本語の文献が多い方が初心者向きです。~~
+
+2020/11/26 追記
+Next.jsは以前はSSR用の薄いフレームワークという印象で、ドキュメントも圧倒的にダサかったのですが、2019年以降飛躍的に機能が強化されドキュメントも刷新されております。また、Nuxtの長所だった、サーバミドルウェア層やwebpackのチューニング設定なども強化されています。
+これにより、各種フレームワークの選定基準はまさに「お好み」の時代になり、少なくともフレームワークの完成度は大きな比較基準にならなくなってきていると考えています。厳密な型制約が必要な場合はreact系のNext.js、デザイナとの協業や簡単さを求めるならNuxt.js, その中庸がAngularでしょうか。
+全て私見です。
+
+# まとめ
+
+上記から一通りアプリケーションの開発を開始できると思います。
+間違っている点、不足している点などがあればご指摘ください。アップデートしていきます。
+
+# 参考
+
+- Nuxt.js ビギナーズガイド
+- Nuxt, Vue公式
+- その他多くのサイト
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
