@@ -67,9 +67,9 @@
   font-size:        100%;
   padding:          0.2em 0.4em;
   margin:           0;
-  color:            #dd0d59;
-  background-color: rgba(27, 31, 35, 0.05);
+  color:            #d75c8a;
   border-radius:    3px;
+  font-weight:      bold;
 }
 
 .content blockquote {

@@ -161,7 +161,8 @@ export default function Index({
               color: #e98d40;
             }
             
-            .token.operator {
+            .token.operator,
+            .token.punctuation {
               color: white;
             }
 
@@ -191,6 +192,13 @@ export default function Index({
             }
 
             /* language-specific */
+            
+            /* typescript */
+            .token.operator,
+            .token.punctuation {
+              color: white;
+            }
+            
 
             /* JSX */
             .language-jsx .token.punctuation,
