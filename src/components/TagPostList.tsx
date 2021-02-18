@@ -46,6 +46,11 @@ export default function TagPostList({ posts, tag, pagination }: Props) {
             display: flex;
             flex-direction: column;
           }
+          @media (min-width: 769px) {
+            .container{
+              padding: 0 5rem;
+            }
+          }
           h1 {
             margin: 0 0 2rem;
             padding: 0;

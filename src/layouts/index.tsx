@@ -98,12 +98,13 @@ export default function Index({
             }  
             .container {
               display: block;
-              max-width: 52rem;
+              max-width: 56rem;
               width: 100%;
               margin: 0 auto;
               padding: 0 1.5rem;
               box-sizing: border-box;
             }
+            
             .metadata div {
               display: inline-block;
               margin-right: 0.5rem;
@@ -140,6 +141,11 @@ export default function Index({
         </style>
         <style global jsx>
           {`
+            strong {
+              font-size: 110%;
+              font-family: sans-serif;
+              font-weight: bold;
+            }
             /* Syntax highlighting */
             .token.comment,
             .token.prolog,

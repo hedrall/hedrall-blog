@@ -1,7 +1,8 @@
 .content {
-  font-family: "Ubuntu", sans-serif;
+  font-family: "M PLUS Rounded 1c", sans-serif;
   color: #222;
   font-weight: 200;
+  font-size: 15px;
 }
 
 .content time {
@@ -9,7 +10,7 @@
 }
 
 .content p {
-  line-height: 1.5rem;
+  line-height: 1.8rem;
   margin: 1.5rem 0 0 0;
 }
 
@@ -22,6 +23,9 @@
   margin: 2.5rem 0 0 0;
 }
 
+.content h1 {
+  border-bottom: solid 2px grey;
+}
 .content h2,
 .content h3,
 .content h4,
@@ -59,16 +63,23 @@
 }
 
 .content code {
-  font-family: "Ubuntu Mono", monospace;
-  font-size: 85%;
-  padding: 0.2em 0.4em;
-  margin: 0;
+  font-family:      "Ubuntu Mono", monospace;
+  font-size:        100%;
+  padding:          0.2em 0.4em;
+  margin:           0;
+  color:            #dd0d59;
   background-color: rgba(27, 31, 35, 0.05);
-  border-radius: 3px;
+  border-radius:    3px;
 }
 
 .content blockquote {
   margin: 0 1rem;
+}
+
+.content blockquote p {
+  border-left:  solid 4px grey;
+  padding-left: 8px;
+  color:        #535353;
 }
 
 .content blockquote::before {

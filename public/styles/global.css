@@ -1,9 +1,10 @@
-@import url("https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Ubuntu+Mono&display=swap");
+/*@import url("https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500&display=swap");*/
+/*@import url("https://fonts.googleapis.com/css2?family=Ubuntu+Mono&display=swap");*/
+@import url("https://fonts.googleapis.com/css?family=M+PLUS+Rounded+1c");
 
 html,
 body {
-  font-family: "Ubuntu", sans-serif;
+  font-family: "M PLUS Rounded 1c", sans-serif;
   background-color: #fff;
   color: #222;
   font-weight: 200;
