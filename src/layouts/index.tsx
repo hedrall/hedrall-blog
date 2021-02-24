@@ -149,13 +149,14 @@ export default function Index({
               font-family: sans-serif;
               font-weight: bold;
             }
+
             /* Syntax highlighting */
             .token.comment,
             .token.prolog,
             .token.doctype,
             .token.cdata,
             .token.plain-text {
-              color: #6a737d;
+              color: #abbacb;
             }
 
             .token.atrule,
@@ -163,7 +164,7 @@ export default function Index({
             .token.keyword {
               color: #e98d40;
             }
-            
+
             .token.operator,
             .token.punctuation {
               color: white;
@@ -176,7 +177,7 @@ export default function Index({
             .token.constant,
             .token.symbol,
             .token.deleted {
-              color: #9876AA;
+              color: #d9a9f3;
             }
 
             .token.selector,
@@ -186,7 +187,7 @@ export default function Index({
             .token.builtin,
             .token.inserted {
               // like JB
-              color: #88ae72;
+              color: #abdb8f;
             }
 
             .token.function,
@@ -195,13 +196,13 @@ export default function Index({
             }
 
             /* language-specific */
-            
+
             /* typescript */
             .token.operator,
             .token.punctuation {
               color: white;
             }
-            
+
 
             /* JSX */
             .language-jsx .token.punctuation,

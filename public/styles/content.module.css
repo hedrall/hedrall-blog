@@ -64,13 +64,13 @@
 }
 
 .content code {
-  font-family:      "Ubuntu Mono", monospace;
-  font-size:        100%;
-  padding:          0.2em 0.4em;
-  margin:           0;
-  color:            #d75c8a;
-  border-radius:    3px;
-  font-weight:      bold;
+  font-family:   "M PLUS Rounded 1c", monospace;
+  font-size:     100%;
+  padding:       0.2em 0.4em;
+  margin:        0;
+  color:         #ffffff;
+  border-radius: 3px;
+  /*font-weight:      bold;*/
 }
 
 .content blockquote {
