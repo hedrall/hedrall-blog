@@ -10,7 +10,7 @@
 }
 
 .content p {
-  line-height: 1.8rem;
+  line-height: 2rem;
   margin: 1.5rem 0 0 0;
 }
 
@@ -64,13 +64,15 @@
 }
 
 .content code {
+  /* インラインのコード */
   font-family:   "M PLUS Rounded 1c", monospace;
   font-size:     100%;
-  padding:       0.2em 0.4em;
-  margin:        0;
-  color:         #ffffff;
+  color:         #073bc6;
   border-radius: 3px;
+  background:    #ddeffb;
   /*font-weight:      bold;*/
+  padding:       0 5px;
+  margin:        0 3px;
 }
 
 .content blockquote {

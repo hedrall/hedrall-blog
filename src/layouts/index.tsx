@@ -148,6 +148,7 @@ export default function Index({
               font-size: 110%;
               font-family: sans-serif;
               font-weight: bold;
+              color: #db20a2;
             }
 
             /* Syntax highlighting */
@@ -202,7 +203,10 @@ export default function Index({
             .token.punctuation {
               color: white;
             }
-
+            
+            [class^=language-typescript] code {
+              color: white;
+            }
 
             /* JSX */
             .language-jsx .token.punctuation,
