@@ -55,7 +55,8 @@ CDKは各種AWSリソースをモデル化したクラス（コンストラク�
 (イメージ)
 ```typescript
 import * as s3 from '@aws-cdk/aws-s3';
-new s3.Bucket(this, 'test-bucket', { bucketName: 'test-bucket' })
+// S3が生成されます
+const bucket = new s3.Bucket(this, 'test-bucket', { bucketName: 'test-bucket' })
 ```
 
 このコンストラクトはLevel1(L1), Level2(L2), higher-levelの[3種類が存在します](https://docs.aws.amazon.com/cdk/latest/guide/constructs.html)。

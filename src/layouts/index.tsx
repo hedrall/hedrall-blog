@@ -163,7 +163,7 @@ export default function Index({
             .token.atrule,
             .token.attr-value,
             .token.keyword {
-              color: #e98d40;
+              color: #ffa251;
             }
 
             .token.operator,
@@ -203,7 +203,7 @@ export default function Index({
             .token.punctuation {
               color: white;
             }
-            
+
             [class^=language-typescript] code {
               color: white;
             }
