@@ -23,8 +23,6 @@ tags:
     name: Firebase
   - slug: nuxt
     name: Nuxt.js
-  - slug: esbuild
-    name: esbuild
   - slug: build
     name: ビルドツール
   - slug: vue
