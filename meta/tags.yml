@@ -25,5 +25,9 @@ tags:
     name: Nuxt.js
   - slug: esbuild
     name: esbuild
+  - slug: build
+    name: ビルドツール
+  - slug: vue
+    name: Vue
   - slug: react
     name: React
