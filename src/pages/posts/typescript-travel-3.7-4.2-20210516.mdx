@@ -49,11 +49,10 @@ tags:
 
 ```typescript
 // 今まで
-type VerticalAlign = 'A' | 'B';
-// こう言う型はありましたが、
+type VerticalAlign = 'top' | 'bottom';
 // 新たにこんな型が定義できる様になりました。
-type b = `---${VerticalAlign}---`;
-// = '---A---' | '---B---'
+type Decorated = `---${VerticalAlign}---`;
+// = '---top---' | '---bottom---'
 ```
 
 この様にプレイスホルダ部分にunion型が入る場合は全ての組み合わせで展開されます。
@@ -122,7 +121,7 @@ function numAndString (): [number, string] {
 1. 可変長のレストパラメータは最後に1回だけしか使えない
 2. レストパラメータは配列の形式でしか使えない( ...string[]の様に )
 
-そこで、4.0で [`Variadic Tuple Types`](https://devblogs.microsoft.com/typescript/announcing-typescript-4-0/#variadic-tuple-types) がリリースされ、2が改善されました。
+そこで、`v4.0` で [`Variadic Tuple Types`](https://devblogs.microsoft.com/typescript/announcing-typescript-4-0/#variadic-tuple-types) がリリースされ、2が改善されました。
 
 参考: [TypeScript 4.0で導入されるVariadic Tuple Typesをさっそく使いこなす](https://qiita.com/uhyo/items/7e31bbd93a80ce9cec84#variadic-tuple-types%E3%81%AE%E3%81%99%E3%81%94%E3%81%84%E7%82%B9)
 
@@ -146,7 +145,7 @@ function tail<T extends any[]>(arr: readonly [any, ...T]) {
 }
 const tuple1 = [1, 2, 3, 4] as const;
 const r1 = tail(tuple1); // => r1: [2, 3, 4]
-const tuple2 = ['hello', 'world'] ;
+const tuple2 = ['hello', 'world'] as const;
 const r2 = tail([...tuple1, ...tuple2]); // => r2: [2, 3, 4, 'hello', 'world']
 ```
 
@@ -172,7 +171,7 @@ type A = [...string[], ...boolean[], number]; // Error
 type B = [...string[], boolean?, number]; // Error
 ```
 
-少し話はそれますが、3.9のリリースでは `Labeled Tuple Elements` がリリースされ、タプルの要素を命名できる様になりました。
+少し話はそれますが、`v3.9` のリリースでは `Labeled Tuple Elements` がリリースされ、タプルの要素を命名できる様になりました。
 
 この様に、タプル型は短期間のうちに可能な限り柔軟になってきました。
 
@@ -285,7 +284,9 @@ type A = Getters<{name: string, age: number}>;
 
 # Assertion Functions `v3.7`
 
-Type Guardをご存知でしょうか？同様に、コンパイラにユーザ側が責任を持って型安全を保証する機能です。
+Type Guardをご存知でしょうか？
+
+Assertion FunctionsはType Guardと同様に、コンパイラにユーザ側が責任を持って型安全を保証する機能です。
 
 例えば、以下の場合itemは `number | undefined` に推論されます。
 
@@ -297,7 +298,7 @@ for (const index in myArray) {
 }
 ```
 
-その為、itemをnumberをして操作したい場合は `undefined` でない事ををチェックしないといけません。
+その為、itemをnumberとして操作したい場合は `undefined` でない事ををチェックしないといけません。
 
 ```typescript
 const item = myArray[index];
@@ -453,7 +454,7 @@ type AbstractClassConstructor = abstract new () => {};
 - [abstract Construct Signatures](https://devblogs.microsoft.com/typescript/announcing-typescript-4-2/#abstract-construct-signatures)
 - [TypeScript 4.2　覚書](https://zenn.dev/yutama_kotaro/articles/43ac06011d3b47)
 
-# Recursive Conditional Types `4.1`
+# Recursive Conditional Types `v4.1`
 
 型の定義を再帰的に行った時に、それが解析される様になりました。
 下記はネストされた配列をフラット化する `deepFlatten` 関数へ型をつける例です。
