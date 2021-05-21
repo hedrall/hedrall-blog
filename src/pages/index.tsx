@@ -15,7 +15,7 @@ export default function Index() {
           <h1>
             Hedrallの技術ブログ<span className="fancy">.</span>
           </h1>
-          <span className="handle">@nextjs-netlify-blog</span>
+          <span className="handle">@_hedrall</span>
           <h2>フロントエンドを中心に雑食です。</h2>
           <SocialList />
         </div>
