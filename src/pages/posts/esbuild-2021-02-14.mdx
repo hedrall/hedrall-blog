@@ -333,7 +333,32 @@ esbuildの場合、jsとcssは別バンドルになるので、ファイルサ�
 
 esbuildそのものを実戦投入しなくても、部分的にesbuildの力を活用できるツールがあるのでご紹介します。
 
-## ts-build-
+## [build-register](https://github.com/egoist/esbuild-register)
+
+TSファイルを直接実行したい時、従来であれば `ts-node` を利用することが多かったと思いますが、実行の度に変換に時間がかかっていました。
+esbuild-registerを利用すると、従来より高速にTSファイルを実行することができます。
+
+```bash
+node -r esbuild-register hoge.ts
+```
+
+実際結構早いので、ぜひお試しください。
+
+## [esbuild-jest](https://github.com/aelbore/esbuild-jest)
+
+JestでTypeScriptのspecを実行する場合はtransformに `ts-jest` を指定するのが一般的かと思いますが、こちらも実行の度に変換に時間がかかります。
+そこで、 `ts-jest` をそのまま `esbuild-jest` に置き換えることで、esbuildによるtransformに置き換えることができます。
+
+```js
+module.exports = {
+  // ...
+  transform: {
+    '^.+\\.(ts|tsx)$': 'esbuild-jest'
+  }
+}
+```
+
+私の試した範囲では、感覚的に2/3くらいの実行速度に改善しました。また、React周りのテストでエラーが発生したので、バックエンドコードのテストに利用しています。
 
 # まとめ
 
