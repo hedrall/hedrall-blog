@@ -29,3 +29,5 @@ tags:
     name: Vue
   - slug: react
     name: React
+  - slug: web-standard
+    name: Web標準

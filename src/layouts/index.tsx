@@ -236,10 +236,25 @@ export default function Index({
             .language-jsx span[class="comment"] {
               color: pink;
             }
-
+            
+            /* JavaScript*/
+            .language-javascript {
+              color: #d9a9f3;
+            }
+            
             /* HTML */
-            .language-html .token.tag .token.punctuation {
-              color: #24292e;
+            .language-html .token.tag .token.punctuation,
+            .language-html .token.tag {
+              color: #FFC66D;
+            }
+            .language-html,
+            .language-html .token.tag .token.attr-name,
+            .language-html .token.selector {
+              color: white !important;
+            }
+            .language-html .token.tag .token.attr-value,
+            .language-html .token.tag .token.attr-value .token.punctuation {
+              color: #abdb8f !important;
             }
 
             .language-html .token.tag .token.attr-name {
@@ -262,6 +277,7 @@ export default function Index({
             .language-css .token.property {
               color: #005cc5;
             }
+            
           `}
         </style>
       </Layout>
