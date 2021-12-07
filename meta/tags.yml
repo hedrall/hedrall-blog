@@ -31,3 +31,7 @@ tags:
     name: React
   - slug: web-standard
     name: Web標準
+  - slug: api
+    name: Api
+  - slug: open-api
+    name: OpenApi
