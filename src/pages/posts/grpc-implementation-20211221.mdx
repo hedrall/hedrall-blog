@@ -402,7 +402,7 @@ $ node -r esbuild-register node-client.ts
 
 `Makefile`
 
-```makefile
+```shell
 NPM_BIN=$(shell npm bin)
 OUT_DIR="./gen"
 
@@ -456,7 +456,7 @@ window.addEventListener('load', () => {
 
 続いて、フロントで利用するために`js`にバンドルしますが、今回は`esbuild`を利用します。
 
-```makefile
+```shell
 # ./bundle//web-client.js を作成して, ./public配下にシンボリックリンクを貼ります
 .PHONY: build
 build:
