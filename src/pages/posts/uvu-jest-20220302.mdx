@@ -1,0 +1,334 @@
+---
+slug: "uvu-jest-20220302"
+title: "既存のJestで書かれたテストを、uvuで爆速実行するツールを作った"
+date: 2022-03-02
+author: hedrall
+image: "/images/aws-cdk/logo.jpg"
+tags:
+  - test
+  - front
+  - typescript
+  - api
+---
+
+![TopPage](https://user-images.githubusercontent.com/20538481/156266257-3e6f9dee-0bd0-4da1-ab1a-d577e36c7380.png)
+
+# 概要
+
+本記事ではタイトルの通り、テストコードの開発時間を短縮するべく、`Jest`で書かれた既存のテストを爆速で実行するツールを開発したので、紹介させて頂きたいと思います！<br />
+名前はズバリ **uvu-jest** としております！ (レポジトリは [こちら](https://github.com/hedrall/uvu-jest) になります。)
+
+結論としては下記のとおりですが、ツールの作成に当たって検討したことや、実装方法などをまとめたいと思います。
+
+結論
+- `Node.js + express` で実装したバックエンドの統合テストの実行時間が **1分20秒 => 9~14秒** ほどに
+- `React + Testing Library`で実装したフロントエンドのユニットテストが **1分20秒 => 20~30秒** ほどに
+改善しました！<br />
+個別のテストの実行ではさらに差も出てくると思われます。<br />
+
+# 背景
+
+先日 [The State of JS 2021](https://2021.stateofjs.com/ja-JP/libraries) も発表され、フロントエンド界隈のエコシステムはますますリッチになって来たことを実感します。その中でも `esbuild` や `svelte` などの隆盛から、軽量な開発環境への取り組みが一段と加速している様子が伺えます。<br />React, Vueなどの成熟でWEB開発の型がある程度定まってきた一方で、VUCAな現代環境においては高速なプロトタイピングやトライエラーの価値がより一層高まってきているのだと感じます。<br />
+ところで、テストフレームワークの世界は [こちら](https://2021.stateofjs.com/ja-JP/libraries/testing) の通り、`Jest` の利用率が圧倒的に高い状態になっています。最近のフロントエンド開発ではとりあえず `Jest` みたいな状態で、`Testing Library` などの人気ツールも `Jest` との併用を想定して実装されています。<br />
+しかしながら、この`Jest`が非常に巨大で鈍足なテストフレームワークであることも既知の通りで、installサイズは約25MBほどあり、実行にかなり遅さを感じます。スタートアップ段階でオーバーヘッドが大きいので、小さなテストを動かしたりwatchモードを利用する際には特にストレスを感じやすかったりします。
+
+![バンドルサイズ比較](https://user-images.githubusercontent.com/20538481/156266245-c79d2888-44fc-4869-9a62-451426ebe269.png)
+
+ある程度のサービスを開発するのであればテストコードの実装はマストなので、`esbuild` や `svelte` がある今、開発DX上の最大の課題がテスト実行の高速化だと私は勝手に思っています。
+
+# uvuに関して
+
+<img height="200" src="https://user-images.githubusercontent.com/20538481/156266418-4579d2b6-dde4-4217-b974-a860e95f0f1f.jpeg">
+
+最近 [uvu`](https://github.com/lukeed/uvu) というツールを知りました。超軽量のテストランナーで究極の速度を実現しているとのことです。<br />
+実際に試してみましたが、かなり高速です。
+
+`Jest`でこんなテストを書くとして、
+
+```typescript
+describe('desc1', () => {
+  test('test1-1', () => {
+    expect(1).toBe(1);
+  });
+});
+```
+
+これを`uvu`で記述すると以下のようになります。
+
+```typescript
+import { suite } from 'uvu';
+import { is } from 'uvu/assert';
+
+const test = suite('desc1');
+test('test1', () => is(1, 1));
+test.run();
+```
+
+`Jest`のような魔法はなく、しっかり`import`して明示的に`run`します。これにより、単体のファイルを`Node.js`で実行することもできるし、`uvu`のCLIコマンドを利用して実行することもできます。
+また、アサートには`Jest`の`expect(...).toBe(...)`ではなく、独自のパッケージ`uvu/assert`を利用します。 
+
+両者を以下のコマンドで実行してみると
+
+- `Jest`: `time node node_modules/.bin/jest test-jest.spec.ts`
+- `uvu` : `time node -r esbuild-register test-uvu.spec.ts` (単体実行)
+
+手元での結果は一例ですがこんな感じです。
+
+- `Jest`: 3.586s
+- `uvu` : 0.195s
+
+実行時間のオーダーが違うのがわかります。実際に`uvu`のコマンドを叩いてみると、一瞬で結果が返ってきます。<br />
+`uvu`がなぜそこまで早いか？ですが、実装が本当にシンプルで、[テストランナー部分](https://github.com/lukeed/uvu/blob/master/src/index.js) はわずか150行ほどの`JavaScritp`なので、簡単にレポジトリの中身を読み解くこともできます。アサート関数を別のパッケージに切り出しているのも特徴的で、必要最低限度の実装がされています。<br />
+インストールサイズもわずか490kBと軽量で、2020年の登場から順調にstar数も増加してる様です。
+
+<img src="https://user-images.githubusercontent.com/20538481/156458257-21251f9f-0e16-4541-9d6a-58b575fc0a6e.png" />
+
+# 開発の動機
+
+テストコードの開発時は何度も実行を繰り返しながら結果を確認していくので、数秒の実行時間の違いでも大きなメリットになりますが、上記の通り`uvu`を利用すれば`Jest`と比較してかなり実行時間を短縮できることがわかりました。<br />
+(postcssのレポでは、実際にJest => uvuに書き変えをする[PR](https://github.com/postcss/postcss/issues/1661) がありました。)
+
+しかしながら、既存で`Jest`を利用している多くのシステムにとっては、uvuに載せ替える事にいくつか懸念点があると思います。
+
+1. 書き換えに時間がかかる
+2. 最終的には安定のJestで結果を確かめられた方が安心する
+3. uvu自体が今後もメンテナンスされていくか？メジャーになるのか？が不透明
+4. 既存のテストの構造を保ちたい
+5. カバレッジの計測や、レポート作成には`Jest`に馴染んだツールを利用したい
+
+3に関しては、実際に最近のcontributionはやや少ないように思います。<br />
+4に関しては、`uvu`では`suite`が`Jest`の`describe`のような働きですが、`describe`と違ってネストする事ができません。テストの実行結果をみやすくするために`describe`を積極的に利用する事は望ましいので、困る開発者もいると思われます。
+
+以上の事から、実行時間を比較的気にしなくても良いCI上では`Jest`で実行しますが、手元で開発する時は暫定的に`uvu`で実行する事ができたら開発効率と安定性を両立できベストだと考えました。つまり、なんらかの方法で既存の`Jest`で書かれたテストと`uvu`で実行できる形に変換できれば良いということになります。
+
+既存で要件に合うツールがなかったので作成したいと考えました。
+
+# 実装方法
+
+## uvuをフォーク
+
+`Jest => uvu`の書き変えが実際に可能か？は`Jest`の機能を`uvu`で表現できるか？を考える必要があがあります。前提として`Jest`は非常に機能が豊富なので全てをサポートすることは考えていませんが、ライフサイクル関数である`afterAll`に関して`uvu`で再現することができません。
+
+具体的なユースケースで説明すると、APIの統合テストの例で以下のようなコードを考えます。
+
+```typescript
+describe('desc1', () => {
+  beforeAll(() => {/* APIサーバの開始 */})
+  afterAll( () => {/* APIサーバの終了 */})
+  
+  describe('desc2', () => {
+    let apiResponse;
+    beforeAll(() => { /* APIリクエストの結果をapiResponseに代入 */; )
+    test('test2', () => { /* apiResponseの内容を確認 */});
+  });
+});
+```
+
+第1階層のライフサイクルで、APIサーバの立ち上げ・終了を行い、第二階層のライフサイクルで各APIリクエストを実行します。
+
+ちなみに下記のTestingTrophyの構造を意識するとこういった統合テストを書く機会もそれなりにあるのではないかと思います。
+
+<img width="300" src="https://user-images.githubusercontent.com/20538481/156463430-0c72e420-bea6-439c-b837-45efb3b21117.png" />
+
+[https://user-images.githubusercontent.com/20538481/156463430-0c72e420-bea6-439c-b837-45efb3b21117.png](https://user-images.githubusercontent.com/20538481/156463430-0c72e420-bea6-439c-b837-45efb3b21117.png)
+
+しかしながら、`uvu`にも`suite.after`というライフサイクルはあるのですが、`suite`はネストする機能がなく、`suite`ごとに`run`していく必要があるため、上記の`afterAll`の実行順序を担保することができません。
+ネストができないことへの問題点は[こちら](https://github.com/lukeed/uvu/issues/43) で議論されていましたが、ライフサイクルフックの実行順序に関しては言及されてなく実装方針は示されていない状況でした。
+
+そこで、やむなく `uvu` を `uvu-jest` としてフォークし、ネスト機能を補完していくことに決めました。結果的には後述するsnapshotテスト対応などもフォークしたことで実現ができました。
+
+## wrapperを作成
+
+コードの変換自体は`Typescript`の[Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) に含まれる、`Transform`を利用することを考えました。これは`TypeScript`のコードをオブジェクト化した`AST`を新規`AST`に変換することができます。
+
+しかし、`AST`は非常に抽象的で巨大なため、`AST`変換で多くのことをするのは得策ではありません。また、変換後のコードが元のコードから見る影もなく変貌してしまうと、デバックや可動性もさがってしまう懸念があります。
+
+そこで、なるべく変換後のコードが元のコードと姿形が似るように、wrapperを作成しました。具体的には`describe`関数を書きの様に`uvu`で実装します。
+
+```typescript
+export function describe (name: string, handler: Handler) {
+  const test = suite(name);
+
+  handler({
+    test,
+    expect, // 別で定義しています
+    describe,
+    afterAll: test.after,
+    beforeAll: test.before,
+  });
+
+  test.run();
+}
+```
+
+ちなみに、このwrapperのアイディは [Rich-Harrisさんのコメント](https://github.com/lukeed/uvu/issues/43#issuecomment-740817223) を参考にしています。この方は`svelte`のメインコントリビュータの方で`uvu`の注目度の高さが伺えます。
+
+これにより、元の`Jest`のコードの書き変え後のイメージはこんな感じで、
+
+```typescript
+import { describe } from 'uvu-jest/jest-wrapper';
+
+describe('desc1', ({ afterAll, test, expect, describe }) => {
+  afterAll(() => {});
+  test('test1', () => {
+    expect(parseInt(0.0000005)).not.toBe(0);
+  });
+  describe('desc2', ({ afterAll, test, expect, describe }) => {
+    afterAll(() => {});
+    test('test2', () => {
+      expect(parseInt(0.0000005)).toBe(5);
+    });
+  })
+});
+```
+
+違いは
+
+1. import文の追加
+2. describeの第二引数に渡す関数に引数を明記する
+
+の二点だけになります。
+
+## コードの変換
+
+`Typescript`の[Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) に含まれる、`Transform`関数は独立して利用することができますが、やはり`tsc`のプラグインとして利用できた方が`watch`モードが使えたり差分でビルドできたりと何かと便利です。あいにく、`tsc`はTransformをプラグインとして設定することができないのですが、[ttypescript](https://github.com/cevek/ttypescript/tree/master/packages/ttypescript) を利用することで解決できます。`ttypescript`は`ttsc`という`tsc`をラップしたCLIコマンドを提供しますが、`tsconfig.json`に書かれたTransformプラグインに対応しています。
+
+プラグインの実装としては [transformer/jest-to-uvu.ts](https://github.com/hedrall/uvu-jest/blob/master/transformer/jest-to-uvu.ts) に独立したパッケージとして作成しています。
+
+プラグインを指定した`tsconfig.json`のイメージはこんな感じで、
+
+ttsc.config.json
+```json
+{
+  "compilerOptions": {
+    "plugins": [
+      {
+        // 変換プラグイン
+        "transform": "uvu-jest-ts-plugin"
+      }
+    ],
+    "outDir": "./dist-uvu",
+    "target": "ESNext",
+    "module": "commonjs",
+    "allowJs": true,
+    "checkJs": false
+  }
+}
+```
+
+実行コマンドは、`npx ttsc -p ttsc.config.json -w`の様な形を想定しています。
+
+# Jestの機能サポート
+
+## 基本
+
+`Jest`の`expect`関数の戻り値には、`toBe`, `toEqual`など多くの関数が登録されており、これらは`Matcher`と呼ばれます。今回 `uvu-jest` で対応している`Matcher`は以下の通りです。
+
+- expect().toBe()
+- expect().toEqual()
+- expect().not.toBe()
+- expect().not.toEqual()
+- expect().rejects.thThrow()
+- expect().toMatchSnapshot()
+
+原理的に足りてない機能もあるかと思いますが、実装をシンプルに保つため、`toBe`で書き換えられる機能は実装しない方針です。たとえば、`expect(num1).lessThanOrEqual(num2)`は`expect(num1 <= num2).toBe(true)`に書き換えて利用する想定です。
+
+また、`Jest`には`describe.each`, `test.each`などもありますが、普通に配列処理で大体しているので未対応です。
+
+## Snapshotテスト
+
+`Jest`の`expect().toMatchSnapshot()`で利用できるスナップショットテストは利用している方も多い機能だと思います。`uvu`にもsnapshotテストの機能はありますが、`Jest`との互換性はない独自の仕様なので、既存のsnapshotファイルを利用することができません。
+そこで、調べたところ [jest-snapshot](https://www.npmjs.com/package/jest-snapshot) という`Jest`のスナップショット機能部分をstand-aloneなnpmパッケージとして切り出したものがあり、利用できそうです。
+
+そこで、[src/customAssert.ts](https://github.com/hedrall/uvu-jest/blob/master/src/customAssert.ts) を作成し、`Jest`の`toMatchSnapshot`に準拠する新たな`Matcher`を作成しました。注意点としては、`jest-snapshot`も巨大なライブラリで、手元ではimportするだけで400msほど消費していたので、必要な時に一度だけ読み込まれるように工夫しました。
+また、`uvu-jest`では`ttsc`でコンパイルした`JS`コードを実行するのですが、`JS`を`dist`などgitにコミットしないディレクトリに吐き出している場合は、snapshot自体元のTSファイルの横に置いておきたくなると思います。そこで、`Jest`には`snapshot resolver`([Qiitaに書きました](https://qiita.com/hedrall/items/61e1809b8acb297193d8) )を設定でき、snapshotの保存先を自由に変更することができます。
+
+そこで、`uvu-jest`もこれに準拠し、ルートディレクトリの`uvu-jest.config.js`に指定できるようにしました。
+
+```js
+module.exports = {
+  setupFiles: ['dist-uvu/jestSetUp.js'],
+  snapshotResolver: 'test/snapshotResolver.js',
+};
+```
+
+`setupFiles`も`Jest`に準拠し、(環境変数の設定など)テスト前に実行するファイルを指定できるようにしています。
+
+## Testing Library
+
+`Testing Library`は `global-jsdom` を利用することで、 `node -r global-jsdom/register node_modules/.bin/uj` の様にして実行することができます。
+(`uj`は`uvu`をフォークしたCLIコマンドです。)
+
+ただし、`Testing Library`に限ったことではありませんが、独自のMatcherを提供している場合があります。例えば、`expect().toBeInTheDocument()`などが、`Jest`にはなく`Testing Library`が独自に提供している`Matcher`です。`Jest`には`expect.extend()`という関数があり、任意の`Matcher`を追加できるようになっており、`Jest`で利用する時は`jest.config.js`で下記のように読み込んでいます。
+
+```js
+module.exports = {
+  setupFilesAfterEnv: ['@testing-library/jest-dom/extend-expect'],
+};
+```
+
+`uvu-jest`でもこれと同様に、任意の`Matcher`を`Record<string, MatcherFunction>`の形で渡すことで追加する機能を`uvu-jest.config.js`に実装しています。
+
+```js
+module.exports = {
+  customMatchers: '@testing-library/jest-dom/matchers',
+};
+```
+
+# uvu-jest の使い方
+
+一例としておすすめの使い方をまとめます。
+
+1.インストールします。
+
+`npm i -D uvu-jest uvu-jest-ts-plugin ttypescript`
+
+2.既存の`tsconfig.json`を参考に、`tsconfig.ttsc.json`を作成
+
+```js
+{
+  "compilerOptions": {
+    // 変換用のプラグインを指定します
+    "plugins": [{"transform": "uvu-jest-ts-plugin"}],
+    // JSファイルの出力先を指定
+    "outDir": "./dist-uvu",
+    "target": "ESNext"
+  }
+}
+```
+
+JSの変換結果を指定する`target`は`Node.js`で実行するので`ESNext`で良いと思います。(`ES6`などにすると、`async/await`のラッパーなどが混入し少しコードがみにくいかもしれません。)
+
+3.変換を実行する
+
+`npx ttsc -p tsconfig.ttsc.json`
+
+ここで、変換の対象になるのはファイル名が `*.spec.(js|ts|tsx)` のファイルのみになっています。
+
+4.テストを実行する
+
+`npx uj dist-uvu spec -i snap`
+
+- 第1引数の`dist-uvu`はディレクトリ
+- 第2引数の`spec`は実行するファイル名のパターン
+- パラメータ `-i` は ignoreしたいパターンです。(`*.spec.js.snap`など)
+
+# まとめ
+
+既存の`Jest`で書かれたテストコードを`uvu`をフォークした軽量タスクランナーで実行できるように変換することで、(一度変換の手間はあるものの) 実行時間を大幅に改善することができました。
+
+結果再掲
+- `Node.js + express` で実装したバックエンドの統合テストの実行時間: **1分20秒 => 9~14秒** 
+- `React + Testing Library`で実装したフロントエンドのユニットテスト: **1分20秒 => 20~30秒**
+
+また、snapshotテストや、フロントエンドのテストも実行できることが確認できました。
+
+今回ツール作成の過程では多くの紆余曲折がありました。最初はWrapperを作らずにそのまま`Jest`のコードを変換しようとAST変換に挑んだり、原理的にafterAllの順序が再現できないことに気づかなかったりと、非常に多くの躓きや学びがありましたが、そもたびに良い方向に梶を切れたと思います。
+
+今後は自分で活用しながら必要が機能の追加改修を行っていきたいと思いますが、みなさんでも利用して頂ける方がいましたら要望・感想などを含めてissueやPRを頂けると幸甚でございます。
+
+長文になりましたが、ここまで読んで頂きありがとうございました 🤗
+
+
+
+
