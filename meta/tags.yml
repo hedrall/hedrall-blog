@@ -37,5 +37,5 @@ tags:
     name: OpenApi
   - slug: node.js
     name: Node.js
-  - slug: Test
-    name: test
+  - slug: test
+    name: Test
