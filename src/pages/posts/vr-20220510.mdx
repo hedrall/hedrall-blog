@@ -5,9 +5,9 @@ date: 2022-05-10
 author: hedrall
 image: "/images/aws-cdk/logo.jpg"
 tags:
-  - infra
-  - cdk
   - typescript
+  - test
+  - cdk
 ---
 
 ![reg-suit](https://user-images.githubusercontent.com/20538481/167508962-8eb0bc04-3821-43f5-af52-d6f20d283949.jpeg)
@@ -252,6 +252,8 @@ Github Actionsで自動的にVRテストが実行される様に環境を構築�
 
 IAMの作成方法は[こちら](https://github.com/aws-actions/configure-aws-credentials#sample-iam-role-cloudformation-template) にCloudFormationテンプレートのサンプルが乗っており、基本はこれを活用すればOKです！
 
+`regSuiteRole.yaml`
+
 ```yaml
 Parameters:
   GitHubOrg:
@@ -306,6 +308,21 @@ CloudFormation実行時のパラメータが３つありますが、`GitHubOrg`�
 > (GithubレポのURLは https://github.com/{GitHubOrg}/{RepositoryName}となっています。 )
 
 これを実行すると、IAMロールが作成されるのでご確認ください。
+
+ちなみに、インフラのコード化にAWS CDKを利用している場合も、以下の用にしてCFテンプレートを取り込み、パラメータを指定する事ができます。
+
+```typescript
+// 注意: CDK V1のimportです
+import * as cfInclude from '@aws-cdk/cloudformation-include';
+
+new cfInclude.CfnInclude(this, 'create-reg-suit-github-actions-role', {
+  templateFile: pathFromSrc('./regSuiteRole.yaml'),
+  parameters: {
+    GitHubOrg: 'ORG名',
+    RepositoryName: 'レポ名',
+  },
+});
+```
 
 では、準備が整いましたので、GithubActionのワークフローを書きましょう！
 
