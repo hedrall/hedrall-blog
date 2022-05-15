@@ -18,21 +18,21 @@ tags:
 皆さんはビジュアルリグレッションテスト(VRテスト)を活用していますでしょうか？
 この記事をご覧になっている方には周知のことですが、Webフロントはちょっと変更しただけでも見た目にずれが出てしまう事はよくありますよね。リリースのたびに目視で確認するのも相当な慧眼が求められる辛い作業になりますし、テストコードで対処するのも困難なので運用上の課題になる事が多くあります。そこで、スクリーンショットで変更を確認できるVRテストが気になっている方も多いと思います。
 
-本記事では、大体知っているけど、なかなか後回しになっていたVRテストの環境の構築方法を分かりやすく解説していきたいと思います！
+本記事では、大体知っているけど、なかなか後回しになっていたVRテストの環境構築方法を分かりやすく解説していきたいと思います！
 
 # そもそもなにが出来るのか？
 
-今回解説するのは [reg-suit](https://github.com/reg-viz/reg-suit) というnpmパッケージを使ったVRテストです。Githubのstar数が870ほどのライブラリですが、現状画像回帰テストを行うためのOSSでは定評のありそうな物は `reg-suit` 一択だと思われます。(E2E系のSaaSには入っている事も多いと思います。)
+今回解説するのは [reg-suit](https://github.com/reg-viz/reg-suit) というnpmパッケージを使ったVRテストです。Githubのstar数が870ほどのライブラリですが、現状画像回帰テストを行うためのOSSで定評のありそうな物は `reg-suit` 一択だと思われます。(E2E系のSaaSには機能が搭載されている事も多いと思います。)
 
 
 では、`reg-suit`はどんな事をしてくれるのか？ということですが、基本的には
 
-1. 2枚の画像の差分の検知(して通知)
+1. 2枚の画像を比較して、差分を検知(して通知)
 2. レポートの作成
 
 になります。よく勘違しやすい部分として、`reg-suit`でスクリーンショットを取ることはできません。新旧の画像が既に用意されている前提で、それらの差分を分かりやすく把握出来るようにしてくれます。そのためスクリーンショットを取得するための環境は別途構築する必要がありますので後述します。
 
-`1. 2枚の画像の差分の検知(して通知)`は、GithubのPullRequestなどで、変更前のスクリーンショットと変更後のスクリーンショットの差分を検知することができます。`reg-suit`はGithub Actionsで実行する事ができ、差分検知結果はGithubのPRに自動的に投稿する事が出来るので、下記の様に見ることができます。
+`2枚の画像を比較して、差分を検知(して通知)`は、GithubのPullRequestなどで、変更前のスクリーンショットと変更後のスクリーンショットの差分を確認する事ができます。`reg-suit`はGithub Actionsで実行する事ができ、差分検知結果はGithubのPRに自動コメントする事が出来るので、下記の様に見ることができます。
 
 ![PRコメント](https://user-images.githubusercontent.com/20538481/167513432-e311401a-ba1f-425f-9c7e-4710c7386b1a.png)
 
@@ -67,7 +67,7 @@ reg-suitの動作は色々な要素(githubやAWS S3など)に依存するため�
 ![reg-suitの動き](https://user-images.githubusercontent.com/20538481/167734745-d88be04a-8881-42d3-91ca-fb3bafd60e13.png)
 
 では丁寧に解説していきたいと思います。
-まずは前提ですが、今回は`feature/xxx => develop`へのプルリクエストを考えます。feature/xxxがdevelopからブランチを切ったタイミングはコミットハッシュが`2dcf...`の時とします。つまり、`2dcf...`のときのスクリーンショットを現在のスクリーンショットと比較することが今回の目的になります。
+まずは前提ですが、今回は`feature/xxx => develop`へのプルリクエストを考えます。また、feature/xxxがdevelopからブランチを切ったタイミングをコミットハッシュが`2dcf...`の時とします。つまり、`2dcf...`のときのスクリーンショットを現在のスクリーンショットと比較することが今回の目的になります。
 
 VRテストの実行は、PRで実行されるGithub Actionsの中で行われます。Github Actionsの中の主な作業は図の通りで、スクリーンショットの取得 => 比較 => uploadという流れになります。upload先は、S3の中にディレクトリをコミットハッシュで切って、その中に保存してくれます。
 
@@ -99,7 +99,7 @@ VRテストの実行は、PRで実行されるGithub Actionsの中で行われ�
 
 # スクリーンショットを取る
 
-Playwrightの利用方法は [公式](https://playwright.dev/docs/intro) に分かりやすく解説されているので、個々では簡単に紹介します。
+Playwrightの利用方法は [公式](https://playwright.dev/docs/intro) に分かりやすく解説されているので、ここでは簡単に紹介します。
 
 まずは install！
 
@@ -135,7 +135,7 @@ const config: PlaywrightTestConfig = {
 export default config;
 ```
 
-ポイントとしては、`testDir`設定して実行ファイルの読込先を`~/vr-test/*`に指定しています。PlaywrightはE2Eテストフレームワークなので、`*.spec.ts`ファイルを作成していくのですが、みなさんのレポジトリには(`jest`などの)既存のスペックファイルがあったりすると思うので、明確に指定しています。
+ポイントとしては、`testDir`を設定して実行ファイルの読込先を`~/vr-test/*`に指定しています。PlaywrightはE2Eテストフレームワークなので、`*.spec.ts`ファイルを作成していくのですが、みなさんのレポジトリには(`jest`などの)既存のスペックファイルがあったりすると思うので、明確に指定しています。
 
 続いて、実行ファイルを作成します。
 
@@ -184,7 +184,7 @@ test.describe('Playwright [スナップショットを取る]', () => {
 
 # VRテスト
 
-続いてはreg-suitを実行して、VRテストを知ていきたいと思います。
+続いてはreg-suitを実行して、VRテストを実行していきたいと思います。
 
 まずはローカルで実行してみます。
 
@@ -227,7 +227,7 @@ test.describe('Playwright [スナップショットを取る]', () => {
   - 数値は適当なので、いじってみてください！
 - pluginsは各プラグインの設定です
   - `reg-notify-github-plugin`:  githubのPRにコメント投稿するプラグイン
-    - `clientId`: 投稿するクライアントのID。後ほど設定するので、個々では適当でOKです
+    - `clientId`: 投稿するクライアントのID。後ほど設定するので、ここでは適当でOKです
   - `reg-publish-s3-plugin`: S3にアップロードするためのプラグイン
     - `bucketName`: ご自身でスクリーンショットを保存しておくS3バケットを作成してください
 
@@ -248,9 +248,9 @@ test.describe('Playwright [スナップショットを取る]', () => {
 Github Actionsで自動的にVRテストが実行される様に環境を構築していきます。まずは先程説明したGithubのPRにコメントを投稿するreg-suitのClientIdを取得します。
 作業方法は [こちらの通り](https://github.com/reg-viz/reg-suit/blob/master/packages/reg-notify-github-plugin/README.md#github-app-and-client-id) です。Github Appsにreg-suieをinstallすると、reg-suit AppからクライアントIDを取得する事が出来るようになります。取得したクライアントIDは`regconfig.json`に追記してください。
 
-続いて、Github Actionのワークフローを定義します！とその前に、reg-suitはS3を利用するのでGithubアクションにS3へのアクセス権限を付与する必要があります。権限の渡し方は色々ありますが、今回は特別なAssuming Roleを作成する方法で進めます。
+続いて、Github Actionのワークフローを定義します。とその前に、reg-suitはS3を利用するのでGithub ActionsにS3へのアクセス権限を付与する必要があります。権限の渡し方は色々ありますが、今回は特別なAssuming Roleを作成する方法で進めます。
 
-IAMの作成方法は[こちら](https://github.com/aws-actions/configure-aws-credentials#sample-iam-role-cloudformation-template) にCloudFormationテンプレートのサンプルが乗っており、基本はこれを活用すればOKです！
+IAM Roleの作成方法は[こちら](https://github.com/aws-actions/configure-aws-credentials#sample-iam-role-cloudformation-template) にCloudFormationテンプレートのサンプルが乗っており、基本はこれをそのまま活用すればOKです！
 
 `regSuiteRole.yaml`
 
@@ -303,7 +303,7 @@ Outputs:
     Value: !GetAtt Role.Arn
 ```
 
-CloudFormation実行時のパラメータが３つありますが、`GitHubOrg`と`RepositoryName`を入力すればOKです！
+CloudFormation実行時のパラメータが３つありますが、実行時に`GitHubOrg`と`RepositoryName`を入力すればOKです！
 
 > (GithubレポのURLは https://github.com/{GitHubOrg}/{RepositoryName}となっています。 )
 
@@ -390,5 +390,6 @@ jobs:
 
 # まとめ
 
-reg-suitの解説記事はたくさんありますが、個人的にわかりやすい情報が少なかったので、まとめ直してみました。
-やっぱり初期構築時は多少面倒なのは否めませんが、Storybookに依存する必要がない点はぐっと難易度が下がったのではないでしょうか？フロントエンドのUIテスト作業はプロダクトが小規模でもすぐに退屈で面倒な作業になってきますので、もしまだ活用されてない方は是非参考にしてDX改善を行って頂ければ幸いですｍｍ
+reg-suitの解説記事はたくさんありますが、個人的にわかりやすい情報が少なかったのでまとめ直してみました。
+
+やっぱり初期構築時は多少面倒なのは否めませんが、Storybookに依存する必要がない点はぐっと難易度が下がったのではないでしょうか？フロントエンドのUIテスト作業はプロダクトが小規模でもすぐに退屈で面倒な作業になってきますので、もしまだ活用されてない方は是非参考にしてDX改善を行って頂けると幸いですｍｍ
