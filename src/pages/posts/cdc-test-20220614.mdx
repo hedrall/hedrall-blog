@@ -60,7 +60,7 @@ CDC Testingの為のテストフレームワークですが、Code First で記�
 ## (Pactの細かな特徴)
 
 - 言語中立
-  - パット見11言語に対応 (https://docs.pact.io/implementation_guides/cli)
+  - ぱっと見11言語に対応 (https://docs.pact.io/implementation_guides/cli)
 - 認証・認可ヘの対応
   - => 専用のライフサイクルフックで再現可能
 - 状態(DBのデータなど)
@@ -138,7 +138,7 @@ describe("API Pact test", () => {
 
 `1. Pactのインスタンスを生成` の部分は、Pactの基本情報を設定しています。consumer, providerがその名の通り今回テストするContractのConsumer, Provider双方のシステム名になります。それ以外は細かな設定です。
 `2. インタラクションを追加` では、Providerとのインタラクションを再現するモックサーバを定義しています。まず、`uponReceiving`ではこのテストの望ましい結果を記載する単なるテスト名です。`state`も同様に見えますが、ここには前提条件を説明する文字列を記載し、後述しますがProvider側で状態の復元が必要になる場合にはProvider側でこの文字列を頼りに状態の復元を行います。 
-`withRequest`, `withResponse`の部分では、どの様なリクエストに対してどの様なレスポンスが返る想定か記述します。`withResponse`の中で、`body`の定義に`eachLike`を利用していますが、これはPactの`Matcher`と呼ばれるものです。CDC TestingではIFの整合性をチェックするのが目的なので、例えば`body.id`が正確に`"09"`であるという事を確かめる必要がなく、単に`string`型のプロパティとして存在していればOKということになりますが、その様な指示が`like`, `eachLike`であり、`eachLike`は`like`の配列版になります。なお、eachLikeによって生成されるスペックのイメージは以下の様になります。
+`withRequest`, `willResponseWith`の部分では、どの様なリクエストに対してどの様なレスポンスが返る想定か記述します。`willResponseWith`の中で、`body`の定義に`eachLike`を利用していますが、これはPactの`Matcher`と呼ばれるものです。CDC TestingではIFの整合性をチェックするのが目的なので、例えば`body.id`が正確に`"09"`であるという事を確かめる必要がなく、単に`string`型のプロパティとして存在していればOKということになりますが、その様な指示が`like`, `eachLike`であり、`eachLike`は`like`の配列版になります。なお、eachLikeによって生成されるスペックのイメージは以下の様になります。
 
 ```js
 spec = {
