@@ -21,7 +21,7 @@ tags:
 
 システム開発を行う中では、他のシステムとの連携を行うシーンが多々あります。そんな時に、どんなパラメータを送ったらどんなレスポンスをしてくれるのか？について、まとまったドキュメントがなかったりとか、自分のシステムを変更する時にシステム間のIFの整合性を取るのが大変だったりと課題が発生します。
 
-この、「どんなパラメータを送ったらどんなレスポンスをしてくれるのか？」をCDC Testingでは契約(Contract)と読んでいます。つまり、CDC Testing はシステム間のやり取り(Interaction)の詳細をスペック化(ドキュメント化)し、すのスペックに沿って出入力の正しさを確かめるテストです。
+この、「どんなパラメータを送ったらどんなレスポンスをしてくれるのか？」をCDC Testingでは契約(Contract)と読んでいます。つまり、CDC Testing はシステム間のやり取り(Interaction)の詳細をスペック化(ドキュメント化)し、そのスペックに沿って出入力の正しさを確かめるテストです。
 
 （そのため、IFに関するテストであり、機能に関するテストではないということになります。）
 
@@ -170,11 +170,11 @@ spec = {
 
 今回は吐き出されたスペックを別途スクリプトなどを利用して、前述したPactBrokerにuploadするものと想定します。uploadが完了すると、PactBrokerの管理画面では以下の様に見えます！
 
-<img width="1178" alt="スクリーンショット 2022-06-15 7 58 55" src="https://user-images.githubusercontent.com/20538481/173703019-4371a535-b789-4e1d-adff-5608da2538a1.png">
+<img width="1178" alt="スクリーンショット 2022-06-15 7 58 55" src="https://user-images.githubusercontent.com/20538481/173703019-4371a535-b789-4e1d-adff-5608da2538a1.png" />
 
 表みたいなアイコンをクリックすると、検証履歴が見れる詳細画面へ飛びます。まだ、Providerの検証を行っていないので、Provider関係の情報は入っていません。
 
-<img width="1157" alt="スクリーンショット 2022-06-15 7 59 03" src="https://user-images.githubusercontent.com/20538481/173703060-f9931af8-66e0-40a6-b6c2-23ba395f4954.png">
+<img width="1157" alt="スクリーンショット 2022-06-15 7 59 03" src="https://user-images.githubusercontent.com/20538481/173703060-f9931af8-66e0-40a6-b6c2-23ba395f4954.png" />
 
 続いて、Providerをチェックするテストコードを記述します。
 コードのイメージは以下の通りです。
@@ -225,7 +225,7 @@ describe('Pact Verification', () => {
 
 以下は、検証結果が追加されたPactBrokerの様子です。わざと、検証に失敗した履歴を一つ対しています。
 
-<img width="1166" alt="スクリーンショット 2022-06-15 8 01 00" src="https://user-images.githubusercontent.com/20538481/173703169-63ba0c36-80ba-4bab-9ac1-3e708bceb853.png">
+<img width="1166" alt="スクリーンショット 2022-06-15 8 01 00" src="https://user-images.githubusercontent.com/20538481/173703169-63ba0c36-80ba-4bab-9ac1-3e708bceb853.png" />
 
 以上の通り、バージョンを含めてConsumer, Provider間のIFの整合性をConsumer起点でチェックする事ができました！
 
