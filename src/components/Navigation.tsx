@@ -34,7 +34,7 @@ export default function Navigation() {
                   router.pathname.startsWith("/my-works") ? "active" : null
                 }
               >
-                制作物
+                活動実績
               </a>
             </Link>
           </li>
