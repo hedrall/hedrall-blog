@@ -20,7 +20,7 @@ tags:
 
 1. プロパティが1つの値オブジェクト
 2. プロパティが2つ以上の値オブジェクト
-3. インスタンスレベルのvalidationロジックを持った値オブジェクト
+3. プロパティ間の組み合わせが存在する値オブジェクト
 
 ## 1. プロパティが1つの値オブジェクト
 
@@ -205,7 +205,7 @@ class Price extends PriceBase {
 ベースクラスは`abstract`にしておくと、`xxxBase`クラスが直接利用ができない事も表現できます。ちなみに、[aws-cdk](https://github.com/aws/aws-cdk/blob/main/docs/DESIGN_GUIDELINES.md#abstract-base) のデザインが参考になっています。
 これで、accessorメソッドを持ったMultiple Valuesな値オブジェクトを定義する事ができます。
 
-## 3. インスタンスレベルのvalidationロジックを持った値オブジェクト
+## 3. プロパティ間の組み合わせが存在する値オブジェクト
 
 まずObjectの値のValidationには３種類の階層が存在します。
 
@@ -216,21 +216,25 @@ class Price extends PriceBase {
 > 実践ドメイン駆動設計を参考
 
 1は個別のプロパティへの制約で、上記で説明した携帯電話番号などが例になりますが、`/^[0-9]{3}-[0-9]{4}-[0-9]{4}$/`という正規表現に従わなくてはなりません。
-今回テーマにする2は複数のプロパティ間で発生する制約に関してで、型で表現が可能な組わせの表現方法になります。
+今回テーマにする2は複数のプロパティ間で発生する制約に関してで、可能な値の組わせを型で表現する方法になります。
 
 少々無理やりな例で恐縮ですが、あるスーパーマーケットの商品が以下のようになっているとします。
 
-![image](https://user-images.githubusercontent.com/20538481/180335259-5a0e1fc4-ebce-4ee2-96e5-b979532daba0.png)
+![image](https://user-images.githubusercontent.com/20538481/180668654-05a12805-39f8-4e49-a021-3ee6903439b8.png)
 
-このスーパーでは上図の通り、トマト・キュウリ・アイスクリームの3種類の食品を販売しています。この内、冷凍食品には賞味期限がないとします。
+このスーパーでは上図の通り、トマト・キュウリ・鮭・アイスクリームの4種類の食品を販売しています。この内、冷凍食品には賞味期限がないとします。
 ここで、食品を表す`Food`を値オブジェクトとして定義したいと思います。
 
 まずは、classを用いて単純に記述すると以下の様になると思います。
 
 ```typescript
 type FoodCategory = '野菜' | '魚' | '冷凍';
+type Vegetable = 'トマト' | 'キュウリ';
+type Fish = '鮭';
+type FrozenFood = 'アイスクリーム';
 class Food {
   category: FoodCategory;
+  name: Vegetable | Fish | FrozenFood;
   // 賞味期限
   appreciationPeriod?: Date;
   
@@ -241,11 +245,13 @@ class Food {
 }
 ```
 
-ただし、`category`によって賞味期限のあるなしが変わるため、validationロジックを追加する必要があります。
+しかし、このクラスの3つのパラメータ間には組み合わせが存在します。`category`によって、選択できる`name` が絞られますし、冷凍食品かどうかで賞味期限のあるなしが変わります。
+この制約を実現するために、コンストラクタにvalidationロジックを追加して見ます。
 
 ```typescript
 class Food {
   category: FoodCategory;
+  name: Vegetable | Fish | FrozenFood;
   // 賞味期限
   appreciationPeriod?: Date;
   
@@ -256,14 +262,15 @@ class Food {
     this.category = props.category;
     this.appreciationPeriod = props.appreciationPeriod;
   }
-
+  
   validate(props: Food): boolean {
-    switch ( this.category ) {
+    switch ( props.category ) {
       case '野菜':
+        return ['トマト', 'キュウリ'].includes(props.name) && props.appreciationPeriod === undefined;
       case '魚':
-        return this.appreciationPeriod !== undefined;
+        return props.name === '鮭' && props.appreciationPeriod === undefined;
       case '冷凍':
-        return this.appreciationPeriod === undefined;
+        return props.name === 'アイスクリーム' && props.appreciationPeriod !== undefined;
     }
   }
 }
@@ -285,31 +292,39 @@ if (tomato.category === '野菜') {
 
 `tomato.category === '野菜'`で条件分岐をしたのにも関わらず、クラス間のプロパティには型の絞り込みが効きません。
 
-そこで、class記法ではなくコンパニオンオブジェクトを利用する事ができます。更に、namespaceを組み合わせると型をまとめるのに便利です。
+そこで、class記法ではなくコンパニオンオブジェクトを利用する事ができます。さらに、namespaceを組み合わせると型をまとめるのに便利です。
 
 > 参考: [TypeScriptのnamespaceは非推奨ではない](https://qiita.com/yuki153/items/a51878ad6a1ce913af48)
 
 ```typescript
 namespace Food {
-  export type General = {
-    category: Exclude<FoodCategory, '冷凍'>;
+  export type Vegetable = {
+    category: '野菜';
+    name: 'トマト' | 'キュウリ';
     appreciationPeriod: Date;
   }
-  export type Cold = {
-    category: Extract<FoodCategory, '冷凍'>;
+  export type Fish = {
+    category: '魚';
+    name: '鮭';
+    appreciationPeriod: Date;
+  }
+  export type Frozen = {
+    category: '冷凍';
+    name: 'アイスクリーム';
     appreciationPeriod: Date;
   }
 }
-type Food = Food.General | Food.Cold;
+type Food = Food.Vegetable | Food.Fish | Food.Frozen;
 const Food = {
   create(props: Food): Food {
     const validate = () => {
       switch ( props.category ) {
         case '野菜':
+          return ['トマト', 'キュウリ'].includes(props.name) && props.appreciationPeriod === undefined;
         case '魚':
-          return props.appreciationPeriod !== undefined;
+          return props.name === '鮭' && props.appreciationPeriod === undefined;
         case '冷凍':
-          return props.appreciationPeriod === undefined;
+          return props.name === 'アイスクリーム' && props.appreciationPeriod !== undefined;
       }
     };
     if (!validate()) throw new Error('値が不正です。');
@@ -321,7 +336,8 @@ const Food = {
 
 少々定義が長くなりましたが、この記法にはいくつか利点があります。
 
-まず、先ほどのクラス定義と比べて、`GeneralFood`, `ColdFood`を明確に定義しているので、どんなFoodの種類が存在するのかが分かりやすくなりました。もちろん、`validation`の中身を読んでいけばロジックから逆算する事ことは可能なのですが、明示的に型定義されていることによって、よりドキュメントとしての価値が向上しています。
+まず、先ほどのクラス定義と比べて、`Food.Vegetable`, `Food.Frozen`などを明確に定義しているので、どんなFoodの種類が存在するのかが分かりやすくなりました。もちろん、`validation`の中身を読んでいけばロジックから逆算する事ことは可能なのですが、明示的に型定義されていることによって、よりドキュメントとしての価値が向上しています。
+実際に利用者が型を参照するときも、`Food`クラス定義を見た時点では `category x name x appreciationPeriod = 3 x 4 x 2 = 24通り`の可能性が存在しますが、コンパニオンオブジェクトを利用する事によって、現実に存在可能な4通りまで型を制限する事ができています。
 
 また、先程問題になっていた型の絞り込みが効くようになっています。
 
@@ -343,19 +359,27 @@ if (tomato.category === '野菜') {
 const Food = {
   create(props: Food): Food { /* ... */},
   guards: {
-    isGeneral(food: Food): food is Food.General {
-      return food.category !== '冷凍';
+    isVegetable(food: Food): food is Food.Vegetable {
+      return food.category === '野菜';
+    },
+    isFish(food: Food): food is Food.Fish {
+      return food.category === '魚';
     },
     isIce(food: Food): food is Food.Cold {
       return food.category === '冷凍';
     },
+    hasAppreciationPeriod(food: Food): food is Exclude<Food, Food.Cold> {
+      return food.category !== '冷凍';
+    }
   }
 }
 
-if (Food.guards.isGeneral(tomato)) {
-  const now = new Date();
-
-  // 賞味期限内か確認
+const now = new Date();
+if (Food.guards.isVegetable(tomato)) {
+  // OK!!
+  if (tomato.appreciationPeriod > now) { ... }
+}
+if (Food.guards.hasAppreciationPeriod(tomato)) {
   // OK!!
   if (tomato.appreciationPeriod > now) { ... }
 }
