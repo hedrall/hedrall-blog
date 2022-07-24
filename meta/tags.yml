@@ -39,7 +39,7 @@ tags:
     name: Node.js
   - slug: test
     name: Test
-  - slug: Architecture
-    name: architecture
-  - slug: DDD
-    name: ddd
+  - slug: architecture
+    name: Architecture
+  - slug: ddd
+    name: DDD
