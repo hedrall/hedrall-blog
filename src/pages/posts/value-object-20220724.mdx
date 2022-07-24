@@ -1,6 +1,6 @@
 ---
 slug: "value-object-20220724"
-title: "ドメイン駆動設計: TypeScriptでのValueObjectの書き方"
+title: "ドメイン駆動設計: TypeScriptでの値オブジェクトの書き方"
 date: 2022-07-24
 author: hedrall
 image: "/images/typescript/logo-wide.svg"
@@ -14,15 +14,15 @@ tags:
 
 ## 概要
 
-ドメイン駆動設計で重要な要素となるValueObjectですが、TypeScriptでは`class`でprimitiveが宣言できないなど言語特性的にに工夫が必要な点があり長い間悩んできました。しかしながら、最近になってようやく効果的なパターンが何種類か定まってきましたので、本記事では下記のパターンに関して私が実践しているValueObjectの書き方をご紹介させて頂きます。
+ドメイン駆動設計で重要な要素となる値オブジェクトですが、TypeScriptでは`class`でprimitiveが宣言できないなど言語特性的に工夫が必要な点があり長い間悩んできました。しかしながら、最近になってようやく効果的なパターンが何種類か定まってきたので、本記事では下記のパターンに関して私が実践している値オブジェクトの書き方をご紹介させて頂きます。
 
 アジェンダ
 
-1. プロパティが1つのValueObject
-2. プロパティが2つ以上のValueObject
-3. インスタンスレベルのvalidationロジックを持った、ValueObject
+1. プロパティが1つの値オブジェクト
+2. プロパティが2つ以上の値オブジェクト
+3. インスタンスレベルのvalidationロジックを持った値オブジェクト
 
-## 1. プロパティが1つのValueObject
+## 1. プロパティが1つの値オブジェクト
 
 SingleValueな値オブジェクトをTypeScriptで宣言する場合に皆さんはどの様にしますか？
 最も単純なパターンだとclassを利用する方法がありますが、以下の様な問題点があります。
@@ -63,7 +63,7 @@ console.log(JSON.stringify(emailAddress)); // => "test@test.com"
 そこで、[コンパニオンオブジェクト](https://typescriptbook.jp/tips/companion-object) を活用する事ができます。
 コンパニオンオブジェクトを知らない方に簡単に説明すると、classでいう**型**と**static method**を個別に宣言する事ができる機能です。
 
-以下は、携帯電話番号の例として、コンパニオンオブジェクトを利用したValueObjectの実装を示します。
+以下は、携帯電話番号の例として、コンパニオンオブジェクトを利用した値オブジェクトの実装を示します。
 
 ```typescript
 type CellPhoneNumber = `${number}-${number}-${number}`;
@@ -87,16 +87,16 @@ const num2: string = num1; // OK
 console.log(JSON.stringify(num1)); // => "000-0000-0000"
 ```
 
-この様に、`num1`は通常のstring型と同様に利用する事ができます。
+この様に、`num1`は通常のprimitive型の様に利用する事ができます。
 
-更に、上記の例ではファクトリの利用を強制する事ができておらず、不正な文字列を代入する事ができてしまいます。
+しかし、上記の例ではファクトリの利用を強制する事ができておらず、不正な文字列を代入する事ができてしまいます。
 
 ```typescript
 // 不正なStringが代入可能
 const num: CellPhoneNumber = '080-00000000000000000000000000-0000000';
 ```
 
-そのため、[type-fest](https://github.com/sindresorhus/type-fest) などに実装されている [Opaque型](https://github.com/sindresorhus/type-fest/blob/main/source/opaque.d.ts) などを利用する事ができます。`Opaque`型を簡単に説明すると、同じ内容の型でも識別子(token)に従って別の型として区別するための型で、以下のような特性があります。
+そこで、[type-fest](https://github.com/sindresorhus/type-fest) などに実装されている [Opaque型](https://github.com/sindresorhus/type-fest/blob/main/source/opaque.d.ts) などを利用する事ができます。`Opaque`型を簡単に説明すると、同じ内容の型でも識別子(token)に従って別の型として区別するための型で、以下のような特性があります。
 
 ```typescript
 type T1 = Opaque<string, 'hoge' /* <- token */ >;
@@ -132,9 +132,9 @@ const num2: CellPhoneNumber = CellPhoneNumber.create('080-0000-0000');
 
 以上で、SingleValueな値オブジェクトを宣言する事ができました。
 
-## 2. プロパティが2つ以上のValueObject
+## 2. プロパティが2つ以上の値オブジェクト
 
-この場合は、1で掲げた問題点が無いため、普通にclassでValueObjectを宣言して特段問題がありません。
+この場合は、1で掲げた問題点が無いため、普通にclassで値オブジェクトを宣言して特段問題がありません。
 
 ```typescript
 type Unit = '円' | 'ドル';
@@ -202,12 +202,12 @@ class Price extends PriceBase {
 }
 ```
 
-ベースクラスは`abstract`にしておくと、直接利用する事ができない事も表現できます。ちなみに、[aws-cdk](https://github.com/aws/aws-cdk/blob/main/docs/DESIGN_GUIDELINES.md#abstract-base) のデザインが参考になっています。
-これで、accessorメソッドを持ったMultiple ValuesなValueObjectを定義する事ができます。
+ベースクラスは`abstract`にしておくと、`xxxBase`クラスが直接利用ができない事も表現できます。ちなみに、[aws-cdk](https://github.com/aws/aws-cdk/blob/main/docs/DESIGN_GUIDELINES.md#abstract-base) のデザインが参考になっています。
+これで、accessorメソッドを持ったMultiple Valuesな値オブジェクトを定義する事ができます。
 
-## 3. インスタンスレベルのvalidationロジックを持った、ValueObject
+## 3. インスタンスレベルのvalidationロジックを持った値オブジェクト
 
-まず表題の意味ですが、まずObjectの値のValidationには３種類の階層が存在します。
+まずObjectの値のValidationには３種類の階層が存在します。
 
 1. プロパティレベル
 2. インスタンスレベル
@@ -216,14 +216,14 @@ class Price extends PriceBase {
 > 実践ドメイン駆動設計を参考
 
 1は個別のプロパティへの制約で、上記で説明した携帯電話番号などが例になりますが、`/^[0-9]{3}-[0-9]{4}-[0-9]{4}$/`という正規表現に従わなくてはなりません。
-今回テーマにする2は複数のプロパティ間で発生する制約に関してです。
+今回テーマにする2は複数のプロパティ間で発生する制約に関してで、型で表現が可能な組わせの表現方法になります。
 
 少々無理やりな例で恐縮ですが、あるスーパーマーケットの商品が以下のようになっているとします。
 
 ![image](https://user-images.githubusercontent.com/20538481/180335259-5a0e1fc4-ebce-4ee2-96e5-b979532daba0.png)
 
 このスーパーでは上図の通り、トマト・キュウリ・アイスクリームの3種類の食品を販売しています。この内、冷凍食品には賞味期限がないとします。
-ここで、食品を表す`Food`をValueObjectとして定義したいと思います。
+ここで、食品を表す`Food`を値オブジェクトとして定義したいと思います。
 
 まずは、classを用いて単純に記述すると以下の様になると思います。
 
@@ -261,9 +261,9 @@ class Food {
     switch ( this.category ) {
       case '野菜':
       case '魚':
-        return !!this.appreciationPeriod;
+        return this.appreciationPeriod !== undefined;
       case '冷凍':
-        return !this.appreciationPeriod;
+        return this.appreciationPeriod === undefined;
     }
   }
 }
@@ -307,9 +307,9 @@ const Food = {
       switch ( props.category ) {
         case '野菜':
         case '魚':
-          return !!props.appreciationPeriod;
+          return props.appreciationPeriod !== undefined;
         case '冷凍':
-          return !props.appreciationPeriod;
+          return props.appreciationPeriod === undefined;
       }
     };
     if (!validate()) throw new Error('値が不正です。');
@@ -321,7 +321,7 @@ const Food = {
 
 少々定義が長くなりましたが、この記法にはいくつか利点があります。
 
-まず、先ほどのクラス定義と比べて、`GeneralFood`, `ColdFood`を明確に定義しているので、どんなFoodの種類が存在するのかがわかりやすくなりました。もちろん、`validation`の中身を読んでいけばロジックから逆算する事ことは可能なのですが、明示的に型定義されていることによって、よりドキュメントとしての価値が向上しています。
+まず、先ほどのクラス定義と比べて、`GeneralFood`, `ColdFood`を明確に定義しているので、どんなFoodの種類が存在するのかが分かりやすくなりました。もちろん、`validation`の中身を読んでいけばロジックから逆算する事ことは可能なのですが、明示的に型定義されていることによって、よりドキュメントとしての価値が向上しています。
 
 また、先程問題になっていた型の絞り込みが効くようになっています。
 
@@ -361,7 +361,7 @@ if (Food.guards.isGeneral(tomato)) {
 }
 ```
 
-以上で、インスタンスのプロパティ間に組み合わせの制約が有る場合のValueObjectを定義する事ができました。
+以上で、インスタンスのプロパティ間に組み合わせの制約が有る場合の値オブジェクトを定義する事ができました。
 
 ## まとめ
 
