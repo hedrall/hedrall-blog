@@ -15,11 +15,12 @@ tags:
 以下のコードで無事、globの文字列をRegExpの文字列に変換することができました。
 
 ```typescript
-const minimatch = require('minimatch').minimatch;
-const globtoregexp = glob => {
-  const regexp = new minimatch(glob).makere();
+const minimatch = require('minimatch').Minimatch;
+console.log(minimatch);
+const globToRegExp = glob => {
+  const regexp = new minimatch(glob).makeRe();
   if (!regexp) throw new error(`globに変換できません。glob: "${glob}"`);
-  return regexp.tostring().slice(1, -1); // 前後に `/` がついてしまうので、sliceする
+  return regexp.toString().slice(1, -1); // 前後に `/` がついてしまうので、sliceする
 };
 ```
 
