@@ -1,0 +1,295 @@
+---
+slug: "20221120-dependency-cruiser"
+title: "eslintだけでは物足りない。dependency-cruiserを使ったアーキテクチャー保護"
+date: 2022-11-20
+author: hedrall
+image: "/images/typescript/logo.png"
+tags:
+  - typescript
+---
+
+# 初めに
+
+今年は家庭菜園にハマり出したのですが、世の中には「押し入れ菜園」なる物があるらしく、私も仕事部屋の書棚の一段を綺麗にして植物工場を作り始めたhedrallです。
+
+本記事では、dependency-cruiserというツールを利用してTypeScriptのコードベースに依存関係のルールを設定していく方法をご紹介します。
+
+# 背景
+
+私はカケハシという会社で入社時に新規プロダクトの立ち上げてから1.5年がったのですが、徐々にコードベースが大きくなってきてコードベースの品質管理の必要性を感じる一方、アーキテクチャーの維持や、チームメンバーとの規約の共有に苦心することが出てきました。
+もともとドキュメントの整備や、`eslint + prettier`の設定などは行ってきていたのですが、それで可視化される部分も限定的です。レビューの工数なども考れば、もっと広範において可能なものは自動テストがかけられる状態を作りたいものです。
+
+そこで、植物工場と`コードメトリクス`に関心を持ち初めて調査をしていたところ、 [こちらの記事](https://blog.logrocket.com/how-to-use-static-code-analysis-to-write-quality-javascript-typescript/) で紹介されたいた [dependency-cruiser](https://github.com/sverweij/dependency-cruiser) を知りました。
+
+`dependency-cruiser` は`js`, `ts`ファイルの依存関係を可視化したり、ルールを作成してlintすることができるツールです。
+
+そもそも、`TypeScript`にはパッケージの概念がなく、`export`するとプロジェクト全体にexportされてしまうため、思いも寄らぬ依存関係が発生したり、循環参照が発生したりという不具合はみなさんもご経験が多いと思います。
+
+とはいえ、「依存関係を管理」というとなんか小難しいというか、そんな必要ってある？って感る方も多いのではないかと思います。
+
+しかし、`dependency-cruiser`を利用すれば、導入も比較的簡単にできますし(eslintは意外に難しい,,,)、公式サイトで紹介されている例などを参照すると、実はプロジェクトの初期段階から有用な設定もいくつも存在することがわかりました。
+
+また、個人的に期待した点としてはアーキテクチャの保護があります。
+私の観測の限り最近はDDDやクリーンアーキテクチャーなど採用するプロジェクトも多くなってきたと感じますが、アーキテクチャーを導入すること即ち、なんらかの`制約`を設けることであり、特に依存関係(ディレクトリ構成)などはそれぞれのチームで決まったパターンを持っていることと思います。
+しかしながら、アーキテクチャ制約をドキュメント管理し、共有し、浸透させ、侵害されないように守り続けるのには、人数が多くなればなるほど計り知れない労力がかかるものです。そこで、`dependency-cruiser`のようなツールで明文化・自動化しておくことは開発効率やアーキテクチャ保護を考える上で、非常有効と思われます。
+
+以上、長くなりましたが、本記事では `dependency-cruiser`の基本的な活用法方と、有用なルールに関して考えていきたいと思います。
+
+# 使い方
+
+## 導入法方
+
+インストール
+
+```bash
+npm i -D dependency-cruiser
+npx depcruise --init
+```
+
+実行すると、いくつか対話式で質問され、完了すると `.dependency-cruiser.js` がルールディレクトリに吐き出されます。
+
+(設定ファイルがjsonではないのはありがたいですね。)
+
+## 実行
+
+`.dependency-cruiser`にはデフォルトのルールが定義されていますので、内容は後ほど紹介してみますが、とりあえず実行してみます。
+
+```bash
+npx depcruise --config .dependency-cruiser.js .
+```
+
+`depcruise`コマンドの引数を`.`にしていますが、指定したディレクトリ配下に対してテストが実行されます。
+
+## グラフ画像の生成
+
+`dependency-cruiser` は依存関係をテストをするだけではなく、画像として可視化することもできます。
+
+サンプル (公式)
+
+![公式のサンプル](https://raw.githubusercontent.com/sverweij/dependency-cruiser/master/doc/assets/sample-dot-output.png)
+
+画像の生成には `dot` コマンドが利用できる必要があるので、[graphviz](https://graphviz.org/download/) を参照して、installします。Macの場合は `brew install graphviz` するだけです。
+
+では、画像の出力をしてみます。
+
+```bash
+depcruise --config .dependency-cruiser.js . --output-type dot | dot -T svg > dependency-graph.svg
+```
+
+これで、`svg`として、依存関係のグラフが生成されます。依存関係にルール違反などがある場合は、それも図示してくれます。
+(プロジェクト全体だとコンポーネントが多すぎてみにくい場合は、引数に指定するディレクトリを絞ってみてください。)
+
+# 設定
+
+[こちら](https://github.com/sverweij/dependency-cruiser/blob/develop/doc/cli.md) に記載がある通りです。CLIのoptionに直接記載することも可能ですが、デフォルトで利用する設定は`.dependency-cruiser.js`の`options`に指定することができます。
+
+### `includeOnly`
+
+`depcruise`コマンドに引数でしたディレクトリのうち、`includeOnly`に指定された正規表現にマッチするファイルだけが分析されます。`dist`, `node_modules`など個別に除外するのは大変なので、通常はこれを指定する事になると思います。
+
+### `exclude`, `filter`
+
+逆に除外する正規表現を設定できます。
+
+### `tsConfig`
+
+`tsconfig.json`の位置を指定します。PathAlias(`@src/**`など)を利用している場合は、こちらの設定が自動的に反映されます。
+例えば、`tsconfig.json`が
+
+```json
+{
+  "baseUrl": ".",
+  "paths": {
+    "@api/*": ["./*"]
+  }
+}
+```
+
+となっており、 `@api/src/index.ts` というimportがあった場合は、`./src/index.ts`に置き換えられてから依存関係が分析されます。
+
+### --output-type, -T (CLIでのみ指定可能)
+
+`Jest`の様にレポーターを指定することで、さまざまな結果を出力できるようになっています。
+
+- err <= default
+- err-long
+- dot
+- ddot
+- archi/ cdot
+- flat/ fdot
+- mermaid
+- err-html
+- markdown
+- html
+- csv
+- teamcity
+- text
+- json
+- anon
+- metrics
+
+`dot`は先ほどSVG画像を出力するのに利用しました。`markdown`は実験的な機能ということになっていますが、Github ActionsからPRに自動コメントするのに便利そうです。
+(mermaidはプロジェクト単位だと大きすぎてブラウザが固まってしまいました。)
+
+### --metrics (CLIでのみ指定可能)
+
+[こちら](https://github.com/sverweij/dependency-cruiser/blob/develop/doc/cli.md#metrics---generate-a-report-with-stability-metrics-for-each-folder) の通りですが、安定度というコードメトリクスを計算してくれます。対応するレポータは一部だけで、`--output-type=metrics` を指定するとみやすいです。
+
+# ルール
+
+## 基本的な書き方
+
+`.dependency-cruiser.js`の全体的な構成は以下の通りです。
+
+```js
+module.exports = {
+  forbidden: [ /* ... */ ],
+  allowed: [ /* ... */ ],
+  allowedSeverity: [ /* ... */ ],
+  required: [ /* ... */ ],
+  extends: '...',
+  options: { /* ... */ },
+}
+```
+
+基本的には `forbidden`には許可されない依存関係を、`required`には期待される依存関係を定義していきます。
+
+続いて、それぞれのルールの書き方は以下の通りです。
+
+
+```js
+module.exports = {
+  forbidden: [
+    {
+      name: `テストディレクトリ配下の依存`,
+      comment: 'testディレクトリ外から、testディレクトリ配下を参照してはいけない',
+      severity: 'error',
+      from: { pathNot: '^(test/)' },
+      to: { path: '^(test/)' },
+    }
+  ],
+};
+```
+
+まずは, `name`, `comment`にこのルールの名前と説明を記載します。(通常のデフォルトのレポーターでは`name`だけが表示されます。)
+`severity`には`eslint`のように、このルールを侵害した時のエラーレベルを `"error" | "warn" | "info" | "ignore"`で選択することができます。
+重要なので、`from`, `to`の部分すが、`from`が`import(require)`する側で、`to`が`export`する側です。また、中身の`path`, `pathNot`などでどのファイルを対象にするかを正規表現で指定します。また、ここで検査されるパスはルートディレクトリからの相対パスになります。`TS`でPathAliasを利用している場合も前述の通り、`tsConfig`オプションを指定することで相対パスに統一されます。
+
+> ちなみに、`glob`表現は使えず正規表現だけです。`glob`から正規表現を自動生成したい場合は[こちら](https://blog.hedrall.work/posts/20221120-glob) の記事も参考にして下さい。
+
+また、`from`, `to`の表現は条件によってい`module`になることもあるので、細かいルールを設定したい場合はチェックしてみてくダさい。
+
+## 有用なルール
+
+冒頭にも書きましたが、「依存関係のテスト」ってどのくらい有用なものがあるのかピント来にくい部分もあると思いますが、実際はすぐに導入したくなるようなルールがたくさんありました。
+`.dependency-cruiser.js`にデフォルトで記載されているルールと、ドキュメントに紹介されている例などからピックアップして、有用なルールの紹介をしたいと思います。
+
+### デフォルトのルールから
+
+#### `no-circular`
+
+```js
+{
+  severity: 'warn',
+  from: {},
+  to: {
+    circular: true,
+  },
+}
+```
+
+循環参照ダメ。絡まるとかなりデバッグしにくいバグに繋がりますが、意外と普段の開発で見落としがちな部分です。
+
+#### `no-orphans`
+
+```js
+{
+  severity: 'warn',
+  from: {
+    orphan: true,
+    pathNot: [
+      '(^|/)\\.[^/]+\\.(js|cjs|mjs|ts|json)$', // .hoge みたいなファイル
+      '\\.d\\.ts$', // 型定義ファイル
+      '(^|/)tsconfig\\.json$', // tsconfig.json
+      '(^|/)(babel|webpack)\\.config\\.(js|cjs|mjs|ts|json)$', // config系
+    ],
+  },
+  to: {},
+},
+```
+
+孤立ファイルを禁止します。地味ですが、リファクタリングする際に完全に孤立したファイルは削除することができるので、そういった確認に便利なルールです。`from`ではもともと孤立することがわかっているファイルは除外する形で、それ以外の前ファイルを対象にしています。
+
+#### `not-to-deprecated`
+
+```js
+{
+  severity: 'warn',
+  from: {},
+  to: {
+    dependencyTypes: ['deprecated'],
+  },
+}
+```
+
+`deprecated(非推奨)`になったnpmモジュールへの参照を禁止します。`dependencyTypes`には他にもnpmにまつわる色々な設定などができます。
+
+#### `no-non-package-json`
+
+```js
+{
+  severity: 'error',
+  from: {},
+  to: {
+    dependencyTypes: ['npm-no-pkg', 'npm-unknown'],
+  },
+}
+```
+
+`package.json`に記載されていないモジュールへの参照を禁止します。`npm i -g ***`でインストールされているモジュールを読み込んでいることに気づかずCI上でエラー(なぜか)する、みたいな罠から初心者を救ってくれます。
+
+#### `not-to-dev-dep`
+
+```js
+{
+  severity: 'error',
+  from: {
+    path: '^(src)',
+    pathNot: '\\.(spec|test)\\.(js|mjs|cjs|ts|ls|coffee|litcoffee|coffee\\.md)$',
+  },
+  to: {
+    dependencyTypes: ['npm-dev'], 
+    pathNot: [
+      'aws-sdk', // AWS Lambdaの場合
+    ]
+  },
+}
+```
+
+`package.json`の`devDependency`に記載されているパッケージへの依存を禁止します。これも気づかないと、CI上の`npm i --prod=true`で実行した時に入ってこずなぜかビルドがエラーするなどという凡ミスから救ってくれます。`to.pathNot`には`Webpack`でいう`externals`に設定するパッケージを指定したりします。
+
+#### `not-to-spec`
+
+```js
+{
+  severity: 'error',
+  from: {},
+  to: {
+    path: '\\.(spec|test)\\.(js|mjs|cjs|ts|ls|coffee|litcoffee|coffee\\.md)$',
+  },
+}
+```
+`.spec.ts`ファイルのimportを禁止します。あってはならないことをしっかり守れます。
+
+### ドキュメントから
+
+#### `features-not-to-features`
+
+
+
+
+
+
+- TypeScriptのモジュール管理
+- コードメトリクス
+本記事ではdepe
