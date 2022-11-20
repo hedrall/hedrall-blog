@@ -18,7 +18,7 @@ tags:
 const minimatch = require('minimatch').Minimatch;
 const globToRegExp = glob => {
   const regexp = new minimatch(glob).makeRe();
-  if (!regexp) throw new error(`globに変換できません。glob: "${glob}"`);
+  if (!regexp) throw new Error(`globに変換できません。glob: "${glob}"`);
   return regexp.toString().slice(1, -1); // 前後に `/` がついてしまうので、sliceする
 };
 ```
