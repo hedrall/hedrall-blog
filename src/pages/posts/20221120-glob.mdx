@@ -16,7 +16,6 @@ tags:
 
 ```typescript
 const minimatch = require('minimatch').Minimatch;
-console.log(minimatch);
 const globToRegExp = glob => {
   const regexp = new minimatch(glob).makeRe();
   if (!regexp) throw new error(`globに変換できません。glob: "${glob}"`);
