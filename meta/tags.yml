@@ -43,3 +43,5 @@ tags:
     name: Architecture
   - slug: ddd
     name: DDD
+  - slug: tips
+    name: Tips
