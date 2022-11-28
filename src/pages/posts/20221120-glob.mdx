@@ -26,18 +26,18 @@ const globToRegExp = glob => {
 
 # 解説
 
-globをRegExpに変換する際にちょうど良いライブラリを見つけるのに時間がかかったので、本記事を書きました。
+`glob`を`RegExp`に変換する際にちょうど良いライブラリを見つけるのに時間がかかったので、本記事を書きました。
 
 まず `glob to regexp` などで検索すると [glob-to-regexp](https://github.com/fitzgen/glob-to-regexp) のようなパッケージが出てきます。NPMでは相当なダウンロード数がありそうですが、レポはpublicアーカイブになっており、このまま利用するのも少し気が引ける状況でした。
 
-そこで、nodeでglobを使ってファイルを読み込む際の定番ライブラリ [glob](https://github.com/isaacs/node-glob) を見てみたところ、内部的に [minimatch](https://github.com/isaacs/minimatch) というパッケージを利用して、パターンマッチさせているとの記述があります。
+そこで、`Node.js`で`glob`を使ってファイルを読み込む際の定番ライブラリ [glob](https://github.com/isaacs/node-glob) を見てみたところ、内部的に [minimatch](https://github.com/isaacs/minimatch) というパッケージを利用してパターンマッチさせているとの記述があります。
 
-では、minimatchの方をみてみると、NPMパッケージ内部でglobパターンマッチに利用されており、glob文字列をJSの`RegExp`オブジェクトに変換できるという旨記載がありました。確かにNPMのライブラリをみると、[package.json](https://github.com/npm/cli/blob/dc8e6bdd1d9e3416846c4f0624705cb42a7fb067/package.json#L90) に記載されています。
+では、`minimatch`の方をみてみると、NPMのno内部で`glob`パターンマッチに利用されており、`glob`文字列をJSの`RegExp`オブジェクトに変換できるという旨記載がありました。確かにNPMのレポジトリをみると、[package.json](https://github.com/npm/cli/blob/dc8e6bdd1d9e3416846c4f0624705cb42a7fb067/package.json#L90) に記載されています。
 
-以上から、Node.jsを利用する以上、NPMと同じロジックでglobを扱うのが自然と考えminimatchを利用させていただくことにしました。
+以上から、`Node.js`を利用する以上、NPMと同じロジックで`glob`を扱うのが自然と考え`minimatch`を利用することにしました。
 
-minimatchの中には `makere()` という関数があり、これで `RegExp` オブジェクトを吐き出せるようです。
+`minimatch`の中には `makeRe()` という関数があり、これで `RegExp` オブジェクトを吐き出せるようです。
 
-ちなみに、RegExpオブジェクトには`toString()`メソッドが利用できますが、`/./.toString() => '/./'`のように、前後に `/` がつくので、sliceをとってあげるようにしないと、RegExp <=> string間の相互変換は冪等な操作にならないようです。
+ちなみに、RegExpオブジェクトには`toString()`メソッドが利用できますが、`/./.toString() => '/./'`のように、前後に `/` がつくので、`.slice(1, -1)`でとってあげるようにしないと、`RegExp` <=> `string`間の相互変換は冪等な操作にならないようです。
 
 以上、小ネタでしたが参考になれば幸いです。
