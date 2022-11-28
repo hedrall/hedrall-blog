@@ -24,6 +24,11 @@ tags:
 
 そこで、最近は植物工場と`コードメトリクス`に関心を持ち初めて調査をしていたところ、 [こちらの記事](https://blog.logrocket.com/how-to-use-static-code-analysis-to-write-quality-javascript-typescript/) で紹介されたいた [dependency-cruiser](https://github.com/sverweij/dependency-cruiser) を知りました。
 
+(参考にした文献)
+<iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0" src="//rcm-fe.amazon-adsystem.com/e/cm?lt1=_blank&bc1=000000&IS2=1&bg1=FFFFFF&fc1=000000&lc1=0000FF&t=hedrall-22&language=ja_JP&o=9&p=8&l=as4&m=amazon&f=ifr&ref=as_ss_li_til&asins=4873118565&linkId=6377dd71adef95c5d30248a2a583b0c2"></iframe>
+
+<br />
+
 `dependency-cruiser` は`js`, `ts`ファイルの依存関係を可視化したり、ルールを作成してlintすることができるツールです。
 
 そもそも、`TypeScript`にはパッケージの概念がなく、`export`するとプロジェクト全体にexportされてしまうため、綺麗な依存関係を保護し続けるには開発者それぞれのスキルが求められます。そのため、思いも寄らぬ依存関係が発じたり、循環参照が発生したりという不具合はある程度の規模の開発者であれば(よく)経験されることと思います。
@@ -261,7 +266,7 @@ forbidden: [{
     pathNot: '\\.(spec|test)\\.(js|mjs|cjs|ts|ls|coffee|litcoffee|coffee\\.md)$',
   },
   to: {
-    dependencyTypes: ['npm-dev'], 
+    dependencyTypes: ['npm-dev'],
     pathNot: [
       'aws-sdk', // AWS Lambdaの場合
     ]
