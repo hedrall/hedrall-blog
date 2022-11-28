@@ -8,8 +8,8 @@ tags:
   - typescript
 ---
 
-![Dep cruiser](/images/dependency-cruiser/logo.png)
-( [公式より](https://github.com/sverweij/dependency-cruiser/tree/develop/doc/assets) )
+<img src="/images/dependency-cruiser/logo.png" style="max-width: 400px" />
+( [レポ](https://github.com/sverweij/dependency-cruiser/tree/develop/doc/assets) )
 
 # 初めに
 
@@ -69,6 +69,7 @@ npx depcruise --config .dependency-cruiser.js .
 サンプル (公式)
 
 ![公式のサンプル](https://raw.githubusercontent.com/sverweij/dependency-cruiser/master/doc/assets/sample-dot-output.png)
+([レポ](https://github.com/sverweij/dependency-cruiser/blob/develop/doc/rules-tutorial.md))
 
 画像の生成には `dot` コマンドが利用可能である必要があるので、[graphviz](https://graphviz.org/download/) を参照して、installします。Macの場合は `brew install graphviz` するだけです。
 
@@ -303,6 +304,7 @@ forbidden: [
 Repoの画像を引用しますが、このように `features` ディレクトリの中に、いくつか `feature` があるとして、それぞれの`feature`は独立させておきたいということがあります。
 
 ![features-not-to-features](https://raw.githubusercontent.com/sverweij/dependency-cruiser/develop/doc/recipes/isolating-peer-folders/rules-applied.svg)
+([レポ](https://github.com/sverweij/dependency-cruiser/blob/develop/doc/rules-tutorial.md))
 
 図の通り、`feature`間で依存してしまっている部分をアラートしてくれています。ルールの記述は`to`部分がちょっと特徴的ですが、正規表現のキャプチャグループを利用して定義することが出来ます。
 
@@ -326,6 +328,7 @@ forbidden: [
 図の通り、`common`ディレクトリに共有するコードを集めたとします。この時、どこからも参照されていない物や、1箇所からしか参照されていないモジュールは共有ディレクトリに存在する必要がありません。
 
 ![no-unshared-utl](https://github.com/sverweij/dependency-cruiser/raw/develop/doc/recipes/shared-or-not/before.svg)
+([レポ](https://github.com/sverweij/dependency-cruiser/blob/develop/doc/rules-tutorial.md))
 
 共有ディレクトリは膨らんで行ったり、特定のユースケースに特化して独自化したコードが散らかったりするので、エラーにせずともwarnにしておくだけでリファクタリングのヒントになります。
 ちなみに、`numberOfDependentsLessThan`を利用する場合は、`to` => `module`に変わっています。
