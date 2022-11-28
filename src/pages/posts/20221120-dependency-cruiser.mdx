@@ -1,6 +1,6 @@
 ---
 slug: "20221120-dependency-cruiser"
-title: "eslintだけでは守れない。dependency-cruiserを使ったアーキテクチャーの保護"
+title: "ESLintだけでは守れない。dependency-cruiserを使ったアーキテクチャーの保護"
 date: 2022-11-29
 author: hedrall
 image: "/images/dependency-cruiser/logo.png"
@@ -19,45 +19,44 @@ tags:
 
 # 背景
 
-私はカケハシという会社で入社時に新規プロダクトの立ち上げてから1.5年がったのですが、徐々にコードベースが大きくなってきてコードベースの品質管理の必要性を感じる一方、アーキテクチャーの維持や、チームメンバーとの規約の共有に苦心することが出てきました。
-もともとドキュメントの整備や、`eslint + prettier`の設定などは行ってきていたのですが、それで保護できる部分部分も限定的です。レビューの工数なども考ると、もっと広範において可能なものは自動テストがかけられる状態を作りたいものです。
+私はカケハシという会社で入社時に新規プロダクトの立ち上げてから1.5年がったのですが、徐々にコードベースが大きくなってきてコードベースの品質管理の必要性を感じる一方、アーキテクチャーの維持や、チームメンバーとの規約・思想の共有に苦心することが出てきました。
+もちろんドキュメントの整備や、`ESLint + Prettier`の設定などは行ってきていたのですが、それでカバーできる範囲は限定的です。レビューの工数なども考ると、もっと広範において可能なものは自動テストがかけられる状態を作りたいものです。
 
 そこで、最近は植物工場と`コードメトリクス`に関心を持ち初めて調査をしていたところ、 [こちらの記事](https://blog.logrocket.com/how-to-use-static-code-analysis-to-write-quality-javascript-typescript/) で紹介されたいた [dependency-cruiser](https://github.com/sverweij/dependency-cruiser) を知りました。
 
 `dependency-cruiser` は`js`, `ts`ファイルの依存関係を可視化したり、ルールを作成してlintすることができるツールです。
 
-そもそも、`TypeScript`にはパッケージの概念がなく、`export`するとプロジェクト全体にexportされてしまうため、綺麗な依存関係を保護し続けるには開発者それぞれのスキルが求められます。そのため、思いも寄らぬ依存関係が発生したり、循環参照が発生したりという不具合はある程度の規模の開発者であれば(よく)経験されることと思います。
+そもそも、`TypeScript`にはパッケージの概念がなく、`export`するとプロジェクト全体にexportされてしまうため、綺麗な依存関係を保護し続けるには開発者それぞれのスキルが求められます。そのため、思いも寄らぬ依存関係が発じたり、循環参照が発生したりという不具合はある程度の規模の開発者であれば(よく)経験されることと思います。
 
-とはいえ、「依存関係を管理」というとなんか小難しいというか、そんな必要ってある？って感る方も多いのではないでしょうか？
+とはいえ、「依存関係を管理」というとなんか小難しいというか、そんな必要ってある？って感じる方も多いのではないでしょうか？
 
-しかし、`dependency-cruiser`を利用すれば、導入も比較的簡単にできますし(eslintは意外に難しいですが,,,)、公式サイトで紹介されている例などを参照すると、実はプロジェクトの初期段階から導入しておきたい有用な設定もいくつも存在することがわかりました。
+しかしながら、実際は`dependency-cruiser`を利用することでプロジェクトの初期段階から導入しておきたい有用な設定がいくつも存在することがわかりました。また、`ESLint`などと比較しても導入が簡単で、CI化のために必要な機能も揃っています。
 
 また、個人的に期待した点としてはアーキテクチャの保護があります。
-私の観測の限り最近はDDDやクリーンアーキテクチャーなど採用するプロジェクトも多くなってきたと感じますが、アーキテクチャーを導入すること即ち、なんらかの`制約`を設けることであり、特に依存関係(ディレクトリ構成)などはそれぞれのチームで決まったパターンを持っていることと思います。
-しかしながら、アーキテクチャ制約をドキュメント管理し、共有し、浸透させ、侵害されないように守り続けるのには、人数が多くなればなるほど計り知れない労力がかかるものです。そこで、`dependency-cruiser`のようなツールで明文化・自動化しておくことは開発効率やアーキテクチャ保護を考える上で、非常有効と思われます。
+私の周りでも最近はDDDやクリーンアーキテクチャーなど採用するプロジェクトも多くなってきましたが、アーキテクチャーを導入すること即ち、なんらかの`制約`を設けることであり、特に依存関係(ディレクトリ構成)などはそれぞれのチームで決まったパターンを持っていることと思います。
+しかし、アーキテクチャ制約をドキュメント管理し、共有し、浸透させ、侵害されないように守り続けるのには、人数が多くなればなるほど計り知れない労力がかかるものです。そこで、`dependency-cruiser`のようなツールで明文化・自動化しておくことは開発効率やアーキテクチャ保護を考える上で非常に有効な施策になると思われます。
 
-以上、長くなりましたが、本記事では `dependency-cruiser`の基本的な活用法方と、有用なルールに関して考えていきたいと思います。
+本記事では `dependency-cruiser`の基本的な利用法方と、有用なルール・活用方法に関して考えていきたいと思います。
 
 # 使い方
 
 ## 導入法方
 
-インストール
-
-```bash
+```shell
 npm i -D dependency-cruiser
 npx depcruise --init
 ```
 
-実行すると、いくつか対話式で質問され、完了すると `.dependency-cruiser.js` がルールディレクトリに吐き出されます。
+実行すると、いくつか対話式で質問され、完了すると `.dependency-cruiser.js` がRootディレクトリに吐き出されます。
 
-(設定ファイルがjsonではないのはありがたいですね。)
+(設定ファイルが`js`なのはありがたいですね。)
 
 ## 実行
 
-`.dependency-cruiser`にはデフォルトのルールが定義されていますので、内容は後ほど紹介してみますが、とりあえず実行してみます。
+`.dependency-cruiser`にはデフォルトのルールが定義されていますので、内容は後ほど紹介いたします。
+まずは実行してみます。
 
-```bash
+```shell
 npx depcruise --config .dependency-cruiser.js .
 ```
 
@@ -71,7 +70,7 @@ npx depcruise --config .dependency-cruiser.js .
 
 ![公式のサンプル](https://raw.githubusercontent.com/sverweij/dependency-cruiser/master/doc/assets/sample-dot-output.png)
 
-画像の生成には `dot` コマンドが利用できる必要があるので、[graphviz](https://graphviz.org/download/) を参照して、installします。Macの場合は `brew install graphviz` するだけです。
+画像の生成には `dot` コマンドが利用可能である必要があるので、[graphviz](https://graphviz.org/download/) を参照して、installします。Macの場合は `brew install graphviz` するだけです。
 
 では、画像の出力をしてみます。
 
@@ -79,16 +78,16 @@ npx depcruise --config .dependency-cruiser.js .
 depcruise --config .dependency-cruiser.js . --output-type dot | dot -T svg > dependency-graph.svg
 ```
 
-これで、`svg`として、依存関係のグラフが生成されます。依存関係にルール違反などがある場合は、それも図示してくれます。
+これで`svg`として依存関係のグラフが生成されます。依存関係にルール違反などがある場合は、それも図中に図示してくれます。<br />
 (プロジェクト全体だとコンポーネントが多すぎてみにくい場合は、引数に指定するディレクトリを絞ってみてください。)
 
-# 設定
+# 設定 (.dependency-cruiser.js)
 
-[こちら](https://github.com/sverweij/dependency-cruiser/blob/develop/doc/cli.md) に記載がある通りです。CLIのoptionに直接記載することも可能ですが、デフォルトで利用する設定は`.dependency-cruiser.js`の`options`に指定することができます。
+[こちら](https://github.com/sverweij/dependency-cruiser/blob/develop/doc/cli.md) に記載がある通りです。CLIのoptionに直接記載することも可能ですが、デフォルトで適用したい設定(の一部)は`.dependency-cruiser.js`の`options`に指定することができます。
 
 ### `includeOnly`
 
-`depcruise`コマンドに引数でしたディレクトリのうち、`includeOnly`に指定された正規表現にマッチするファイルだけが分析されます。`dist`, `node_modules`など個別に除外するのは大変なので、通常はこれを指定する事になると思います。
+`depcruise`コマンドに引数で渡したディレクトリ配下のうち、`includeOnly`に指定された正規表現にマッチするファイルだけがテストされます。`dist`, `node_modules`など個別に除外するのは大変なので、通常はこれを指定する事になると思います。
 
 ### `exclude`, `filter`
 
@@ -108,7 +107,7 @@ depcruise --config .dependency-cruiser.js . --output-type dot | dot -T svg > dep
 }
 ```
 
-となっており、 `@api/src/index.ts` というimportがあった場合は、`./src/index.ts`に置き換えられてから依存関係が分析されます。
+となっており、 `import '@api/src/index.ts';` があった場合は、`src/index.ts`に置き換えられてから依存関係が分析されます。
 
 ### --output-type, -T (CLIでのみ指定可能)
 
@@ -132,11 +131,11 @@ depcruise --config .dependency-cruiser.js . --output-type dot | dot -T svg > dep
 - metrics
 
 `dot`は先ほどSVG画像を出力するのに利用しました。`markdown`は実験的な機能ということになっていますが、Github ActionsからPRに自動コメントするのに便利そうです。
-(mermaidはプロジェクト単位だと大きすぎてブラウザが固まってしまいました。)
+(`mermaid`はプロジェクト単位だと大きすぎてブラウザが固まってしまいました。)
 
 ### --metrics (CLIでのみ指定可能)
 
-[こちら](https://github.com/sverweij/dependency-cruiser/blob/develop/doc/cli.md#metrics---generate-a-report-with-stability-metrics-for-each-folder) の通りですが、安定度というコードメトリクスを計算してくれます。対応するレポータは一部だけで、`--output-type=metrics` を指定するとみやすいです。
+[こちら](https://github.com/sverweij/dependency-cruiser/blob/develop/doc/cli.md#metrics---generate-a-report-with-stability-metrics-for-each-folder) の通りですが、安定度というコードメトリクスを計算してくれます。対応するレポータは一部だけで、`-T metrics` を指定するとみやすいです。
 
 # ルール
 
@@ -155,7 +154,7 @@ module.exports = {
 }
 ```
 
-基本的には`forbidden`に許可されない依存関係を記述していきます。また、必要があれば`required`には期待される依存関係を定義していきます。
+基本的には`forbidden`に許可されない依存関係を記述していきます。また、必要があれば`required`には期待される(ないと困る)依存関係を定義していきます。
 
 続いて、それぞれのルールの書き方は以下の通りです。
 
@@ -174,9 +173,9 @@ module.exports = {
 };
 ```
 
-まずは, `name`, `comment`にこのルールの名前と説明を記載します。(デフォルトのレポーターでは`name`だけが表示されます。)
-`severity`には`eslint`のように、このルールを侵害した時のエラーレベルを `"error" | "warn" | "info" | "ignore"`で選択することができます。
-重要なのは、`from`, `to`の部分すが、`from`が`import(require)`する側で、`to`が`export`する側です。また、中身の`path`, `pathNot`などでどのファイルを対象にするかを正規表現で指定します。また、ここで検査されるパスはルートディレクトリからの相対パスになります。`TS`でPathAliasを利用している場合も前述の通り、`tsConfig`オプションを指定することで相対パスに変換・統一されます。
+まずは, `name`, `comment`にこのルールの名前と説明を記載します。(デフォルトのレポーターでは`name`だけが表示されます) <br />
+`severity`には`ESLint`のように、このルールを侵害した時のエラーレベルを `"error" | "warn" | "info" | "ignore"`で選択することができます。<br/>
+重要なのは、`from`, `to`の部分ですが、`from`が`import(require)`する側で、`to`が`export`する側です。また、中身の`path`, `pathNot`などでどのファイルを対象にするかを正規表現で指定します。また、ここで検査されるパスはルートディレクトリからの相対パスになります。`TS`でPathAliasを利用している場合は前述の通り、`options.tsConfig`に`tsconfig.json`を指定することで相対パスに統一されます。
 
 > ちなみに、`glob`表現は使えず正規表現だけです。`glob`から正規表現を自動生成したい場合は[こちら](https://blog.hedrall.work/posts/20221120-glob) の記事も参考にして下さい。
 
@@ -184,8 +183,8 @@ module.exports = {
 
 ## 有用なルール
 
-冒頭にも書きましたが、「依存関係のテスト」ってどのくらい有用なものがあるのかピント来づらい部分もあると思いますが、実際はすぐに導入したくなるようなルールがたくさんありました。
-`.dependency-cruiser.js`にデフォルトで記載されるjルールと、ドキュメントに紹介されている例などからピックアップして、有用なルールの紹介をしたいと思います。
+冒頭にも書きましたが、「依存関係のテスト」ってどんな有用なものがあるのかピント来づらい部分もあると思いますが、実際はすぐに導入したくなるようなルールがたくさんあります。
+`.dependency-cruiser.js`にデフォルトで記載されるルールと、ドキュメントに紹介されている例などからピックアップして、有用なルールの紹介をしたいと思います。
 
 ### デフォルトのルールから
 
@@ -221,7 +220,7 @@ forbidden: [{
 }]
 ```
 
-`orphan: true`によって孤立ファイルを禁止します。地味ですが、リファクタリングする際に完全に孤立したファイルは削除することができるので、そういった確認に便利なルールです。`from`ではもともと孤立することがわかっているファイルは除外する形で、それ以外の前ファイルを対象にしています。
+`orphan: true`によって孤立ファイルを禁止します。地味ですが、リファクタリングする際に完全に孤立したファイルは削除することができるので、そういった確認に便利なルールです。`from`ではもともと孤立することがわかっているファイルは除外する形で、それ以外の全ファイルを対象にしています。
 
 #### `not-to-deprecated`
 
@@ -249,7 +248,7 @@ forbidden: [{
 }]
 ```
 
-`package.json`に記載されていないモジュールへの参照を禁止します。`npm i -g ***`でインストールされているモジュールを読み込んでいることに気づかずCI上でエラー(なぜか)する、みたいな罠から初心者を救ってくれます。
+`package.json`に記載されていないモジュールへの参照を禁止します。`npm i -g ***`でインストールされているモジュールを読み込んでいることに気づかずCI上で(なぜか)エラーする、みたいな罠から初心者を救ってくれます。
 
 #### `not-to-dev-dep`
 
@@ -269,7 +268,8 @@ forbidden: [{
 }]
 ```
 
-`package.json`の`devDependency`に記載されているパッケージへの依存を禁止します。これも気づかないと、CI上で`npm i --prod=true`を実行した際に`devDependency`はインストールされずビルドエラーが発生するなどという凡ミスから救ってくれます。`to.pathNot`には`Webpack`でいう`externals`に設定するパッケージを指定したりという用例が考えられます。
+`package.json`の`devDependency`に記載されているパッケージへの依存を禁止します。これも気づかないと、CI上で`npm i --prod=true`を実行した際に`devDependency`はインストールされずビルドエラーが発生するなどという凡ミスから救ってくれます。<br />
+(`to.pathNot`には`Webpack`でいう`externals`に設定するパッケージを指定したりできます。)
 
 #### `not-to-spec`
 
@@ -302,7 +302,7 @@ forbidden: [
 
 Repoの画像を引用しますが、このように `features` ディレクトリの中に、いくつか `feature` があるとして、それぞれの`feature`は独立させておきたいということがあります。
 
-[features-not-to-features](https://raw.githubusercontent.com/sverweij/dependency-cruiser/develop/doc/recipes/isolating-peer-folders/rules-applied.svg)
+![features-not-to-features](https://raw.githubusercontent.com/sverweij/dependency-cruiser/develop/doc/recipes/isolating-peer-folders/rules-applied.svg)
 
 図の通り、`feature`間で依存してしまっている部分をアラートしてくれています。ルールの記述は`to`部分がちょっと特徴的ですが、正規表現のキャプチャグループを利用して定義することが出来ます。
 
@@ -323,14 +323,14 @@ forbidden: [
 ];
 ```
 
-図の通り、`common`ディレクトリに共有するコードを集めたとします。この時、どこからも参照されていない物は不要なので、一箇所からしか参照されていないモジュールは共有ディレクトリに存在する必要がありません。
+図の通り、`common`ディレクトリに共有するコードを集めたとします。この時、どこからも参照されていない物や、1箇所からしか参照されていないモジュールは共有ディレクトリに存在する必要がありません。
 
-[no-unshared-utl](https://github.com/sverweij/dependency-cruiser/raw/develop/doc/recipes/shared-or-not/before.svg)
+![no-unshared-utl](https://github.com/sverweij/dependency-cruiser/raw/develop/doc/recipes/shared-or-not/before.svg)
 
-共有ディレクトリは膨らんで行ったり、特定のユースケースに特化して独自化したコードが散らかったりするので、エラーにせずともwarnにしておくだけでリファクタリングに便利だと思います。
+共有ディレクトリは膨らんで行ったり、特定のユースケースに特化して独自化したコードが散らかったりするので、エラーにせずともwarnにしておくだけでリファクタリングのヒントになります。
 ちなみに、`numberOfDependentsLessThan`を利用する場合は、`to` => `module`に変わっています。
 
-#### deprecateしたモジュールに、追加の依存を発生させないようにする
+#### `deprecateしたモジュールに、追加の依存を発生させないようにする`
 
 あるモジュールをdeprecatedにしても、すぐに削除できない場合があります。その場合は以下の通り2つのルールを組み合わせて、新規の依存を規制することができます。
 
@@ -374,25 +374,29 @@ const KNOWN_DEPRECATED_THINGY_DEPENDENTS = [
 }
 ```
 
-1つ目のルールで新規の依存をエラーさせ、2つ目のルールでは警告するだけにします。
+1つ目のルールで新規の依存をエラーさせ、2つ目のルールでは既存の依存を警告だけします。
 
 # 活用
 
 ## Github Actionsで実行し、PRに自動コメントする
 
 `dependency-cruiser`には`depcruise-fmt`というコマンドが入っており、`json`で吐き出された結果を別のレポーター形式に変換することができます。
-GithubActions上で実行する際は、標準出力への表示(`err`レポーター)と、PRへの自動コメント(`markdown`レポーター)で2種類の形式で結果を表示したいため、`depcruise-fmt`を活用します。
+`GithubActions`上で実行する際は、標準出力への表示(`err`レポーター)と、PRへの自動コメント(`markdown`レポーター)の2種類の形式で結果を表示したいため、`depcruise-fmt`を活用します。
 
 workflowの例
 ```yaml
 - name: 1. dependency-cruiserを実行する
   run: depcruise --config .dependency-cruiser.js -T json > result.json
+
 - name: 2. 結果を標準出力する
   run: depcruise-fmt -T err result.json
+
 - name: 3. Markdown出力用のファイルを作成し、タイトルを書き込む
   run: echo '# dependency-cruiserによる依存関係分析結果' > comment.md
+
 - name: 4. 結果をMarkdowでファイルに書き込む
   run: depcruise-fmt -T markdown >> comment.md
+
 - name: 5. find-commentを利用して、既存の自動コメントがあれば置き換えます
   uses: peter-evans/find-comment@v2
   id: fc
@@ -400,6 +404,7 @@ workflowの例
     issue-number: ${{ github.event.pull_request.number }}
     comment-author: 'github-actions[bot]'
     body-includes: dependency-cruiserによる依存関係分析結果
+
 - name: 6. コメントを投稿する
   uses: peter-evans/create-or-update-comment@v2
   with:
@@ -416,16 +421,16 @@ workflowの例
 
 TSは仕様上`export`をするとプロジェクト全体に公開されてしまうので、例えば大きなファイルをいくつかのファイルに整理整頓して分割すると、分割した定義はglobalに`export`されてしまいます。
 これを`import`できる範囲を絞ることができれば、無駄な依存関係の可能性を相当削減することができます。
-そこで、内部パッケージチックな挙動を実現するルールを作成しましたので、アイディアとして参考にしていただけると幸いです。
+そこで、内部パッケージチックな挙動を実現するルールを作成してみたので、アイディアとして参考にしていただけると幸いです。
 
 ルールは以下の2つで、
 
-1. '_'から始まるディレクトリ内部のファイルは、同ディレクトリ内のファイルまたは、直上のディレクトリのファイルからのみimport可能
-  - ex) `src/entity/_hoge/some.ts`をimportできるのは、`src/entity/*.ts`, `src/entity/_hoge/*.ts`
-2. `2. '_'から始まるファイルは同階層に置かれたファイルからのみimport可能
-  - ex) `src/entity/_support.ts`をimportできるのは、`src/entity/*.ts`
+1. `_`から始まるディレクトリ内部のファイルは、同ディレクトリ内のファイルまたは、直上のディレクトリのファイルからのみimport可能
+  - ex) `src/entity/_private/some.ts`をimportできるのは、`src/entity/*.ts`, `src/entity/_private/*.ts`
+2. 2. `_`から始まるファイルは同階層に置かれたファイルからのみimport可能
+  - ex) `src/entity/_private.ts`をimportできるのは、`src/entity/*.ts`
 
-ただし、ユニットテストから読み込むことはあるので、`*.spec.ts`には制約がかからない様にしています。
+ただし、ユニットテストから読み込むことがあるので、`*.spec.ts`には制約がかからない様にしています。
 
 ```js
 forbidden: [
@@ -450,7 +455,7 @@ forbidden: [
 ]
 ```
 
-こういった1つ1つのルールはある意味自己流にはなりますが、CI化できるのでチームメンバーと合意して運用していくのは難しくないと思います。
+こういった1つ1つのルールはある意味自己流にはなりますが、CI化できるのでチームそれぞれに合ったルールをメンバー間で合意し運用していくのも難しくないと思います。
 
 ## まとめ
 
