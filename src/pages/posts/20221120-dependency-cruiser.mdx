@@ -1,6 +1,6 @@
 ---
 slug: "20221120-dependency-cruiser"
-title: "ESLintだけでは守れない。dependency-cruiserを使ったアーキテクチャーの保護"
+title: "ESLintだけでは守れない。Dependency cruiserによるアーキテクチャー保護"
 date: 2022-11-29
 author: hedrall
 image: "/images/dependency-cruiser/logo.png"
@@ -8,7 +8,8 @@ tags:
   - typescript
 ---
 
-<img src="/images/dependency-cruiser/logo.png" style="max-width: 320px" />
+<img src="/images/dependency-cruiser/logo.png" style={{width: 320}} />
+
 ( [レポより](https://github.com/sverweij/dependency-cruiser/tree/develop/doc/assets) )
 
 # 初めに
@@ -23,6 +24,11 @@ tags:
 もちろんドキュメントの整備や、`ESLint + Prettier`の設定などは行ってきていたのですが、それでカバーできる範囲は限定的です。レビューの工数なども考ると、もっと広範において可能なものは自動テストがかけられる状態を作りたいものです。
 
 そこで、最近は植物工場と`コードメトリクス`に関心を持ち初めて調査をしていたところ、 [こちらの記事](https://blog.logrocket.com/how-to-use-static-code-analysis-to-write-quality-javascript-typescript/) で紹介されたいた [dependency-cruiser](https://github.com/sverweij/dependency-cruiser) を知りました。
+
+(参考にした文献)
+<div dangerouslySetInnerHTML={{__html: '<iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0" src="//rcm-fe.amazon-adsystem.com/e/cm?lt1=_blank&bc1=000000&IS2=1&bg1=FFFFFF&fc1=000000&lc1=0000FF&t=hedrall-22&language=ja_JP&o=9&p=8&l=as4&m=amazon&f=ifr&ref=as_ss_li_til&asins=4873118565&linkId=6377dd71adef95c5d30248a2a583b0c2" ></iframe>'}} />
+
+<br />
 
 `dependency-cruiser` は`js`, `ts`ファイルの依存関係を可視化したり、ルールを作成してlintすることができるツールです。
 
@@ -261,7 +267,7 @@ forbidden: [{
     pathNot: '\\.(spec|test)\\.(js|mjs|cjs|ts|ls|coffee|litcoffee|coffee\\.md)$',
   },
   to: {
-    dependencyTypes: ['npm-dev'], 
+    dependencyTypes: ['npm-dev'],
     pathNot: [
       'aws-sdk', // AWS Lambdaの場合
     ]
