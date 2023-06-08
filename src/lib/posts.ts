@@ -14,14 +14,17 @@ export type PostContent = {
 
 let postCache: PostContent[];
 
+export function listPostFiles() {
+    const fileNames = fs.readdirSync(postsDirectory).filter(i => i.endsWith(".mdx"));
+    return fileNames;
+}
+
 function fetchPostContent(): PostContent[] {
   if (postCache) {
     return postCache;
   }
   // Get file names under /posts
-  const fileNames = fs.readdirSync(postsDirectory);
-  const allPostsData = fileNames
-    .filter((it) => it.endsWith(".mdx"))
+  const allPostsData = listPostFiles()
     .map((fileName) => {
       // Read markdown file as string
       const fullPath = path.join(postsDirectory, fileName);
