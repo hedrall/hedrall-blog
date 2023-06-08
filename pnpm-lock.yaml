@@ -36,10 +36,10 @@ dependencies:
     version: 4.1.0
   next:
     specifier: 13.4.4
-    version: 13.4.4(@babel/core@7.12.9)(react-dom@18.2.0)(react@18.2.0)(sass@1.62.1)
+    version: 13.4.4(@babel/core@7.22.1)(react-dom@18.2.0)(react@18.2.0)(sass@1.62.1)
   next-mdx-enhanced:
-    specifier: ^3.1.0
-    version: 3.1.0(react@18.2.0)
+    specifier: ^5.0.0
+    version: 5.0.0(next@13.4.4)(react@18.2.0)
   node-fetch:
     specifier: ^2.6.1
     version: 2.6.1
@@ -437,7 +437,7 @@ packages:
       '@babel/core': ^7.0.0-0
     dependencies:
       '@babel/core': 7.12.9
-      '@babel/helper-plugin-utils': 7.10.4
+      '@babel/helper-plugin-utils': 7.21.5
       '@babel/plugin-syntax-object-rest-spread': 7.8.3(@babel/core@7.12.9)
       '@babel/plugin-transform-parameters': 7.22.3(@babel/core@7.12.9)
     dev: false
@@ -6805,23 +6805,27 @@ packages:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
     dev: false
 
-  /next-mdx-enhanced@3.1.0(react@18.2.0):
-    resolution: {integrity: sha512-o8I+pieavTa6ohmT/ZXf7A9OgP4xi7KWQ3nlHxSdjffqOCsBIuNgYd52lEdD8jbrfTtM/mCG4sBrp4FHsS/QjA==}
+  /next-mdx-enhanced@5.0.0(next@13.4.4)(react@18.2.0):
+    resolution: {integrity: sha512-ZeiJFV33V5ykRNW/w4UVnZzSwNsvQ1wz5qpJXrct4fkMSx+LXt5f6+IyxQbZXOdGqODEu7cZ6nEMPMohIldKaA==}
+    peerDependencies:
+      next: 9.0.x - 10.0.x
     dependencies:
+      '@babel/core': 7.22.1
       '@mdx-js/loader': 1.6.22(react@18.2.0)
       debug: 4.3.4
       fs-extra: 9.1.0
       glob: 7.2.3
       gray-matter: 4.0.3
       loader-utils: 2.0.4
-      prebuild-webpack-plugin: 1.1.0
+      next: 13.4.4(@babel/core@7.22.1)(react-dom@18.2.0)(react@18.2.0)(sass@1.62.1)
+      prebuild-webpack-plugin: 1.1.1
       stringify-object: 3.3.0
     transitivePeerDependencies:
       - react
       - supports-color
     dev: false
 
-  /next@13.4.4(@babel/core@7.12.9)(react-dom@18.2.0)(react@18.2.0)(sass@1.62.1):
+  /next@13.4.4(@babel/core@7.22.1)(react-dom@18.2.0)(react@18.2.0)(sass@1.62.1):
     resolution: {integrity: sha512-C5S0ysM0Ily9McL4Jb48nOQHT1BukOWI59uC3X/xCMlYIh9rJZCv7nzG92J6e1cOBqQbKovlpgvHWFmz4eKKEA==}
     engines: {node: '>=16.8.0'}
     hasBin: true
@@ -6847,7 +6851,7 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       sass: 1.62.1
-      styled-jsx: 5.1.1(@babel/core@7.12.9)(react@18.2.0)
+      styled-jsx: 5.1.1(@babel/core@7.22.1)(react@18.2.0)
       zod: 3.21.4
     optionalDependencies:
       '@next/swc-darwin-arm64': 13.4.4
@@ -7284,8 +7288,8 @@ packages:
       source-map-js: 1.0.2
     dev: false
 
-  /prebuild-webpack-plugin@1.1.0:
-    resolution: {integrity: sha512-/IdXyCP+7Ij/5ndsKsySTTlwsijwx8cafuU8BOisUiVIMsVjsZniJH/PiThBFG1vU1HI+/+pBwgQSIJ/GkZ7kA==}
+  /prebuild-webpack-plugin@1.1.1:
+    resolution: {integrity: sha512-H5/VnSl7KZm3NCGj1+8BrBHu0Bn9xzLREdpeE4TRYyp4t4qFnYPExzozk2sfD/CLJRGIuyOFrXbXgJJ4ETdz/g==}
     engines: {node: '>=8.9.0'}
     dependencies:
       debug: 4.3.4
@@ -8293,7 +8297,7 @@ packages:
       inline-style-parser: 0.1.1
     dev: false
 
-  /styled-jsx@5.1.1(@babel/core@7.12.9)(react@18.2.0):
+  /styled-jsx@5.1.1(@babel/core@7.22.1)(react@18.2.0):
     resolution: {integrity: sha512-pW7uC1l4mBZ8ugbiZrcIsiIvVx1UmTfw7UkC3Um2tmfUq9Bhk8IiyEIPl6F8agHgjzku6j0xQEZbfA5uSgSaCw==}
     engines: {node: '>= 12.0.0'}
     peerDependencies:
@@ -8306,7 +8310,7 @@ packages:
       babel-plugin-macros:
         optional: true
     dependencies:
-      '@babel/core': 7.12.9
+      '@babel/core': 7.22.1
       client-only: 0.0.1
       react: 18.2.0
     dev: false

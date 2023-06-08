@@ -18,12 +18,12 @@ type Props = {
   title: string;
   date: Date;
   slug: string;
-  description: string;
+  description?: string;
   tags: string[];
   author: string;
   image: string;
 };
-export default function Index({
+export default function MdxLayout({
   title,
   date,
   slug,

@@ -1,3 +1,4 @@
+const withMdxEnhanced = require("next-mdx-enhanced");
 const rehypePrism = require("@mapbox/rehype-prism");
 
 const withMDX = require('@next/mdx')({
