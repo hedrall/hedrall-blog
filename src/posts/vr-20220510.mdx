@@ -149,7 +149,7 @@ import * as path from 'path';
 test.describe.configure({ mode: 'parallel' });
 
 test.describe('Playwright [スナップショットを取る]', () => {
-  
+
   // 書く test の前に実行
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({
@@ -305,7 +305,7 @@ Outputs:
 
 CloudFormation実行時のパラメータが３つありますが、実行時に`GitHubOrg`と`RepositoryName`を入力すればOKです！
 
-> (GithubレポのURLは https://github.com/{GitHubOrg}/{RepositoryName}となっています。 )
+> (GithubレポのURLは `https://github.com/{GitHubOrg}/{RepositoryName}となっています。` )
 
 これを実行すると、IAMロールが作成されるのでご確認ください。
 
@@ -344,12 +344,12 @@ jobs:
         node-version: [17.x]
 
     steps:
-      - 
+      -
     # セットアップ
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    
+
     # 先ほど作成したIAM Roleから、AWSクレデンシャルを取得する
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
@@ -357,14 +357,14 @@ jobs:
         aws-region: ap-northeast-1
         role-to-assume: {ロールのARN}
         role-session-name: MySessionName
-        
+
     # パッケージのインストール
     - name: setup
       run: npm install --prod=false
     - uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-        
+
     # reg-suit用
     - name: workaround for detached HEAD
       run: |
@@ -375,7 +375,7 @@ jobs:
     - name: build frontend
       run: npm run build
     - name: serve local
-      # expressでホストしているが、foreverでプロセスを永続化する     
+      # expressでホストしているが、foreverでプロセスを永続化する
       run: npm i -g forever && forever start -c "node local.js" ./
 
     # スクショを取る
