@@ -41,7 +41,7 @@ export default function Page(props: Props) {
   const PostComponent = Post.Components[postFileName];
 
   return (
-    <Layout {...meta}>
+    <Layout>
       <PostComponent />
     </Layout>
   );
