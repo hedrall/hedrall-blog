@@ -8,7 +8,7 @@ type _Meta = {
   description?: string;
   date: string;
   author: string;
-  image: string | undefined;
+  image: string;
   tags: string[];
 };
 

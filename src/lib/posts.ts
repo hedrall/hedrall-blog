@@ -1,7 +1,6 @@
 import fs from 'fs';
-import matter from 'gray-matter';
 import path from 'path';
-import yaml from 'js-yaml';
+import { Post } from '../posts/meta';
 
 const postsDirectory = path.join(process.cwd(), 'src/posts');
 
@@ -28,18 +27,7 @@ function fetchPostContent(): PostContent[] {
     const fullPath = path.join(postsDirectory, fileName);
     const fileContents = fs.readFileSync(fullPath, 'utf8');
 
-    // Use gray-matter to parse the post metadata section
-    const matterResult = matter(fileContents, {
-      engines: {
-        yaml: (s) => yaml.load(s, { schema: yaml.JSON_SCHEMA }) as object,
-      },
-    });
-    const matterData = matterResult.data as {
-      date: string;
-      title: string;
-      tags: string[];
-      slug: string;
-    };
+    const matterData = Post.Meta[fileName as Post.FileName];
     const slug = fileName.replace(/\.mdx$/, '');
 
     // Validate slug string
