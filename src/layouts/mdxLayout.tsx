@@ -23,6 +23,7 @@ export default function MdxLayout({ title, date: _date, slug, author, tags, desc
     return foundTag.name;
   });
   const authorName = getAuthor(author).name;
+  // eslint-disable-next-line
   return ({ children: content }) => {
     return (
       <Layout>
