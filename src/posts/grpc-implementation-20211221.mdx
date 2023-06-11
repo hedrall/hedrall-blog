@@ -1,15 +1,3 @@
----
-slug: "grpc-implementation-20211221"
-title: "Node.js + TypeScript で gRPCに入門する [後編: 実装編]"
-date: 2021-12-21
-author: hedrall
-image: "/images/grpc/logo.jpg"
-tags:
-  - api
-  - typescript
-  - node.js
----
-
 ![TopPage](/images/grpc/logo.png)
 [出典: https://cncf-branding.netlify.app/projects/grpc/]
 
@@ -146,9 +134,9 @@ gen:
 準備ができたので、コンパイルを実行してみましょう。`Makefile`を配置しているディレクトリで `make gen` を実行すると、`./gen` ディレクトリの配下に下記の4つのファイルが生成されます。
 
 - `shop_grpc_pb.d.ts`
-- `shop_grpc_pb.js` <- gRPCのコード
+- `shop_grpc_pb.js` ← gRPCのコード
 - `shop_pb.d.ts`
-- `shop_pb.js` <- モデル定義
+- `shop_pb.js` ← モデル定義
 
 ### `gRPC`サーバを実装する
 

@@ -1,14 +1,3 @@
----
-slug: "20221120-glob"
-title: "Node.jsでglobパターンを、RegExpに変換するBetterな法方"
-date: 2022-11-20
-author: hedrall
-image: "/images/typescript/logo.png"
-tags:
-  - tips
-  - typescript
----
-
 小ネタです。
 
 # 結論
@@ -38,6 +27,6 @@ const globToRegExp = glob => {
 
 `minimatch`の中には `makeRe()` という関数があり、これで `RegExp` オブジェクトを吐き出せるようです。
 
-ちなみに、RegExpオブジェクトには`toString()`メソッドが利用できますが、`/./.toString() => '/./'`のように、前後に `/` がつくので、`.slice(1, -1)`でとってあげるようにしないと、`RegExp` <=> `string`間の相互変換は冪等な操作にならないようです。
+ちなみに、RegExpオブジェクトには`toString()`メソッドが利用できますが、`/./.toString() → '/./'`のように、前後に `/` がつくので、`.slice(1, -1)`でとってあげるようにしないと、`RegExp` {'<>'} `string`間の相互変換は冪等な操作にならないようです。
 
 以上、小ネタでしたが参考になれば幸いです。

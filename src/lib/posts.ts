@@ -1,9 +1,8 @@
-import fs from "fs";
-import matter from "gray-matter";
-import path from "path";
-import yaml from "js-yaml";
+import fs from 'fs';
+import path from 'path';
+import { Post } from '../posts/meta';
 
-const postsDirectory = path.join(process.cwd(), "src/pages/posts");
+const postsDirectory = path.join(process.cwd(), 'src/posts');
 
 export type PostContent = {
   readonly date: string;
@@ -14,42 +13,30 @@ export type PostContent = {
 
 let postCache: PostContent[];
 
+export function listPostFileNames() {
+  return fs.readdirSync(postsDirectory).filter((i) => i.endsWith('.mdx'));
+}
+
 function fetchPostContent(): PostContent[] {
   if (postCache) {
     return postCache;
   }
   // Get file names under /posts
-  const fileNames = fs.readdirSync(postsDirectory);
-  const allPostsData = fileNames
-    .filter((it) => it.endsWith(".mdx"))
-    .map((fileName) => {
-      // Read markdown file as string
-      const fullPath = path.join(postsDirectory, fileName);
-      const fileContents = fs.readFileSync(fullPath, "utf8");
+  const allPostsData = listPostFileNames().map((fileName) => {
+    // Read markdown file as string
+    const fullPath = path.join(postsDirectory, fileName);
+    const fileContents = fs.readFileSync(fullPath, 'utf8');
 
-      // Use gray-matter to parse the post metadata section
-      const matterResult = matter(fileContents, {
-        engines: {
-          yaml: (s) => yaml.safeLoad(s, { schema: yaml.JSON_SCHEMA }) as object,
-        },
-      });
-      const matterData = matterResult.data as {
-        date: string;
-        title: string;
-        tags: string[];
-        slug: string;
-      };
-      const slug = fileName.replace(/\.mdx$/, "");
+    const matterData = Post.Meta[fileName as Post.FileName];
+    const slug = fileName.replace(/\.mdx$/, '');
 
-      // Validate slug string
-      if (matterData.slug !== slug) {
-        throw new Error(
-          "slug field not match with the path of its content source"
-        );
-      }
+    // Validate slug string
+    if (matterData.slug !== slug) {
+      throw new Error('slug field not match with the path of its content source');
+    }
 
-      return matterData;
-    });
+    return matterData;
+  });
   // Sort posts by date
   postCache = allPostsData.sort((a, b) => {
     if (a.date < b.date) {
@@ -62,20 +49,18 @@ function fetchPostContent(): PostContent[] {
 }
 
 export function countPosts(tag?: string): number {
-  return fetchPostContent().filter(
-    (it) => !tag || (it.tags && it.tags.includes(tag))
-  ).length;
+  return fetchPostContent().filter((it) => !tag || (it.tags && it.tags.includes(tag))).length;
 }
 
-export function listPostContent(
-  page: number,
-  limit: number,
-  tag?: string
-): PostContent[] {
+export function listPostContent(page: number, limit: number, tag?: string): PostContent[] {
   return fetchPostContent()
     .filter((it) => !tag || (it.tags && it.tags.includes(tag)))
-    .filter(it => {
-      return it.tags.every( tag => tag !== 'hidden' );
-    } )
+    .filter((it) => {
+      return it.tags.every((tag) => tag !== 'hidden');
+    })
     .slice((page - 1) * limit, page * limit);
+}
+
+export async function loadPost(fileName: string) {
+  return await import(path.resolve(postsDirectory, fileName));
 }

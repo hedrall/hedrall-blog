@@ -1,14 +1,3 @@
----
-slug: "cdc-test-20220614"
-title: "マイクロサービス間の整合性を守る、消費者駆動契約テストをNode.jsで試してみる"
-date: 2022-06-14
-author: hedrall
-image: "/images/pact/logo.png"
-tags:
-  - typescript
-  - test
----
-
 ![pact-logo](https://user-images.githubusercontent.com/20538481/173459948-57e93fb1-3881-4867-82b0-ec48f5da6d90.png)
 
 # 概要
@@ -125,7 +114,7 @@ describe("API Pact test", () => {
 
       // (モックサーバのURLにAPIリクエストが飛ぶようにする)
       const api = new API( provider.mockService.baseUrl );
-      
+
       const product = await api.getAllProducts();
 
       expect( product ).toStrictEqual( [
@@ -137,7 +126,7 @@ describe("API Pact test", () => {
 ```
 
 `1. Pactのインスタンスを生成` の部分は、Pactの基本情報を設定しています。consumer, providerがその名の通り今回テストするContractのConsumer, Provider双方のシステム名になります。それ以外は細かな設定です。
-`2. インタラクションを追加` では、Providerとのインタラクションを再現するモックサーバを定義しています。まず、`uponReceiving`ではこのテストの望ましい結果を記載する単なるテスト名です。`state`も同様に見えますが、ここには前提条件を説明する文字列を記載し、後述しますがProvider側で状態の復元が必要になる場合にはProvider側でこの文字列を頼りに状態の復元を行います。 
+`2. インタラクションを追加` では、Providerとのインタラクションを再現するモックサーバを定義しています。まず、`uponReceiving`ではこのテストの望ましい結果を記載する単なるテスト名です。`state`も同様に見えますが、ここには前提条件を説明する文字列を記載し、後述しますがProvider側で状態の復元が必要になる場合にはProvider側でこの文字列を頼りに状態の復元を行います。
 `withRequest`, `willResponseWith`の部分では、どの様なリクエストに対してどの様なレスポンスが返る想定か記述します。`willResponseWith`の中で、`body`の定義に`eachLike`を利用していますが、これはPactの`Matcher`と呼ばれるものです。CDC TestingではIFの整合性をチェックするのが目的なので、例えば`body.id`が正確に`"09"`であるという事を確かめる必要がなく、単に`string`型のプロパティとして存在していればOKということになりますが、その様な指示が`like`, `eachLike`であり、`eachLike`は`like`の配列版になります。なお、eachLikeによって生成されるスペックのイメージは以下の様になります。
 
 ```js
@@ -194,7 +183,7 @@ describe('Pact Verification', () => {
   afterAll(async () => await server.close());
 
   test('ECサイト_APIを検証', async () => {
-    
+
     // 2. Verifierを設定
     const options: VerifierOptions = {
       logLevel: 'info',

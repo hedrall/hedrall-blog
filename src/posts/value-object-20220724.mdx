@@ -1,15 +1,3 @@
----
-slug: "value-object-20220724"
-title: "ドメイン駆動設計: TypeScriptでの値オブジェクトの書き方"
-date: 2022-07-24
-author: hedrall
-image: "/images/typescript/logo-wide.svg"
-tags:
-  - typescript
-  - architecture
-  - ddd
----
-
 ![ts-lettermark-blue](https://user-images.githubusercontent.com/20538481/180634538-4c6a8197-a811-41f3-8672-56f5e5bcacc7.svg)
 
 ## 概要
@@ -51,7 +39,7 @@ const emailAddress = new EmailAddress('test@test.com');
 class EmailAddress {
   value: string;
   constructor (value) { this.value = value; }
-  
+
   toJSON(){
     return this.value;
   }
@@ -143,7 +131,7 @@ type Unit = '円' | 'ドル';
 class Price {
   unit: Unit;
   amount: number;
-  
+
   constructor (props: Price) {
     this.unit = props.unit;
     this.amount = props.amount;
@@ -198,8 +186,8 @@ class Price extends PriceBase {
     });
   }
 
-  constructor (props: PriceBase /* ← Baseクラスを受け取る */) { 
-    super(props) 
+  constructor (props: PriceBase /* ← Baseクラスを受け取る */) {
+    super(props)
   }
 }
 ```
@@ -239,7 +227,7 @@ class Food {
   name: Vegetable | Fish | FrozenFood;
   // 賞味期限
   appreciationPeriod?: Date;
-  
+
   constructor (props: Food) {
     this.category = props.category;
     this.appreciationPeriod = props.appreciationPeriod;
@@ -256,7 +244,7 @@ class Food {
   name: Vegetable | Fish | FrozenFood;
   // 賞味期限
   appreciationPeriod?: Date;
-  
+
   constructor (props: Food) {
     if (this.validate(props)) {
       throw new Error('値が不正です。');
@@ -264,7 +252,7 @@ class Food {
     this.category = props.category;
     this.appreciationPeriod = props.appreciationPeriod;
   }
-  
+
   validate(props: Food): boolean {
     switch ( props.category ) {
       case '野菜':
@@ -285,8 +273,8 @@ declare const tomato: Food;
 
 if (tomato.category === '野菜') {
   const now = new Date();
-  
-  // 賞味期限内か確認 
+
+  // 賞味期限内か確認
   // ↓ TS2532: Object is possibly 'undefined'.
   if (tomato.appreciationPeriod > now) { ... }
 }
