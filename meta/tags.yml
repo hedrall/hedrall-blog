@@ -45,3 +45,5 @@ tags:
     name: DDD
   - slug: tips
     name: Tips
+  - slug: spa
+    name: SPA

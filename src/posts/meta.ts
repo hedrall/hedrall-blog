@@ -33,11 +33,20 @@ const _PostFileName = [
   'vite-20210305.mdx',
   'vr-20220510.mdx',
   'web-components-20211018.mdx',
+  'qwik.mdx',
 ] as const;
 
 type _PostFileName = (typeof _PostFileName)[number];
 
 const _Meta: { [K in _PostFileName]: _Meta } = {
+  'qwik.mdx': {
+    slug: 'qwik',
+    title: '[メモ]: qwikをさわってみた。',
+    date: '2023-06-12',
+    author: 'hedrall',
+    image: '/images/qwik/qwik-logo.svg',
+    tags: ['typescript', 'SPA'],
+  },
   '20221120-dependency-cruiser.mdx': {
     slug: '20221120-dependency-cruiser',
     title: 'ESLintだけでは守れない。Dependency cruiserによるアーキテクチャー保護',
@@ -202,6 +211,7 @@ const _Meta: { [K in _PostFileName]: _Meta } = {
 
 const _PostComponents = {
   '20221120-dependency-cruiser.mdx': DependencyCruiser,
+  'qwik.mdx': dynamic(() => import('./qwik.mdx')),
   '20221120-glob.mdx': dynamic(() => import('./20221120-glob.mdx')),
   '20221203-jet-brain.mdx': dynamic(() => import('./20221203-jet-brain.mdx')),
   'aws-cdk-20210207.mdx': dynamic(() => import('./aws-cdk-20210207.mdx')),
