@@ -114,14 +114,38 @@ export const Counter = component$(() => {
 ```
 
 1. コンポーネント定義が`components$`で囲われる
-2. `useState` => `useStore`
+2. `useState` => `useSignal` (useStore)
 3. `onClick` => `onClick$`
 
 Qwikでは暗黙な非同期境界ができない様に、非同期部分を `$` で明示します。
 例えば、 コンポーネントの記述が `component$()`で囲われていますが、コンポーネントコードが一つの非同期分割単位(非同期境界)になっていることを示しています。
 
 after
-![image](https://github.com/hedrall/hedrall-blog/assets/20538481/c6f41f0a-9b71-4aa3-a951-94204f77bed6)
+
+[//]: # (![image]&#40;https://github.com/hedrall/hedrall-blog/assets/20538481/c6f41f0a-9b71-4aa3-a951-94204f77bed6&#41;)
+
+```tsx
+const Counter = component(qrl('./chunk-a.js', 'Counter_onMount'));
+```
+
+chunk-a.js
+```tsx filenamene="chunk-b.js"
+export const Counter_onMount = () => {
+  const count = useSignal(0);
+  return (
+    <button onClick$={qrl('./chunk-b.js', 'Counter_onClick', [count])}>
+      {count.value}
+    </button>
+  )
+}
+```
+
+```tsx filenamene="chunk-b.js"
+const Counter_onClick = () => {
+  const [count, props] = useLexicalScope();
+  return (count.value += props.step || 1);
+};
+```
 
 # React,Nextとの対応
 

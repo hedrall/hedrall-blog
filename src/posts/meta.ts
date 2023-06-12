@@ -41,7 +41,7 @@ type _PostFileName = (typeof _PostFileName)[number];
 const _Meta: { [K in _PostFileName]: _Meta } = {
   'qwik.mdx': {
     slug: 'qwik',
-    title: 'qwikをさわってみた',
+    title: 'qwikをざっくり調べてみた',
     date: '2023-06-12',
     author: 'hedrall',
     image: 'https://github.com/hedrall/hedrall-blog/assets/20538481/e724cf4e-0c79-488f-a0c8-003ceac28e0b',
