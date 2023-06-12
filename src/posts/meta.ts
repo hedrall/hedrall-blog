@@ -44,7 +44,7 @@ const _Meta: { [K in _PostFileName]: _Meta } = {
     title: 'qwikをさわってみた',
     date: '2023-06-12',
     author: 'hedrall',
-    image: '/images/qwik/qwik-logo.svg',
+    image: 'https://github.com/hedrall/hedrall-blog/assets/20538481/e724cf4e-0c79-488f-a0c8-003ceac28e0b',
     tags: ['typescript', 'spa'],
   },
   '20221120-dependency-cruiser.mdx': {
