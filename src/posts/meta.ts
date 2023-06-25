@@ -53,7 +53,7 @@ const _Meta: { [K in _PostFileName]: _Meta & { slug: _PostFileName extends `${in
     title: 'エンジニアが考える、情報対象性の高い資料を書くために必要なこと',
     date: '2023-06-25',
     author: 'hedrall',
-    image: undefined,
+    image: '',
     tags: ['doc'],
   },
   '20221120-dependency-cruiser.mdx': {
@@ -219,7 +219,7 @@ const _Meta: { [K in _PostFileName]: _Meta & { slug: _PostFileName extends `${in
 };
 
 const _PostComponents = {
-  'doc-creation.mdx': dynamic(() => import('./doc-creation.mdx.mdx')),
+  'doc-creation.mdx': dynamic(() => import('./doc-creation.mdx')),
   '20221120-dependency-cruiser.mdx': DependencyCruiser,
   'qwik.mdx': dynamic(() => import('./qwik.mdx')),
   '20221120-glob.mdx': dynamic(() => import('./20221120-glob.mdx')),
