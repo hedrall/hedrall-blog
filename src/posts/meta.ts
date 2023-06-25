@@ -50,7 +50,7 @@ const _Meta: { [K in _PostFileName]: _Meta & { slug: _PostFileName extends `${in
   },
   'doc-creation.mdx': {
     slug: 'doc-creation',
-    title: 'エンジニアが考える、情報対象性の高い資料を書くために必要なこと',
+    title: 'エンジニアが考える、情報対象性の高い資料作成に重要なこと',
     date: '2023-06-25',
     author: 'hedrall',
     image: '',
