@@ -47,3 +47,5 @@ tags:
     name: Tips
   - slug: spa
     name: SPA
+  - slug: doc
+    name: Doc

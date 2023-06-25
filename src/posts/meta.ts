@@ -34,11 +34,12 @@ const _PostFileName = [
   'vr-20220510.mdx',
   'web-components-20211018.mdx',
   'qwik.mdx',
+  'doc-creation.mdx',
 ] as const;
 
 type _PostFileName = (typeof _PostFileName)[number];
 
-const _Meta: { [K in _PostFileName]: _Meta } = {
+const _Meta: { [K in _PostFileName]: _Meta & { slug: _PostFileName extends `${infer N}.mdx` ? N : string } } = {
   'qwik.mdx': {
     slug: 'qwik',
     title: 'qwikをざっくり調べてみた',
@@ -46,6 +47,14 @@ const _Meta: { [K in _PostFileName]: _Meta } = {
     author: 'hedrall',
     image: 'https://github.com/hedrall/hedrall-blog/assets/20538481/e724cf4e-0c79-488f-a0c8-003ceac28e0b',
     tags: ['typescript', 'spa'],
+  },
+  'doc-creation.mdx': {
+    slug: 'doc-creation',
+    title: 'エンジニアが考える、情報対象性の高い資料を書くために必要なこと',
+    date: '2023-06-25',
+    author: 'hedrall',
+    image: undefined,
+    tags: ['doc'],
   },
   '20221120-dependency-cruiser.mdx': {
     slug: '20221120-dependency-cruiser',
@@ -210,6 +219,7 @@ const _Meta: { [K in _PostFileName]: _Meta } = {
 };
 
 const _PostComponents = {
+  'doc-creation.mdx': dynamic(() => import('./doc-creation.mdx.mdx')),
   '20221120-dependency-cruiser.mdx': DependencyCruiser,
   'qwik.mdx': dynamic(() => import('./qwik.mdx')),
   '20221120-glob.mdx': dynamic(() => import('./20221120-glob.mdx')),
