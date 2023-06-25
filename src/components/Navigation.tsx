@@ -26,6 +26,11 @@ export default function Navigation() {
               <a className={router.pathname.startsWith('/my-works') ? 'active' : null}>活動実績</a>
             </Link>
           </li>
+          <li>
+            <Link href="/tools" legacyBehavior>
+              <a className={router.pathname.startsWith('/tools') ? 'active' : null}>Tools</a>
+            </Link>
+          </li>
         </ul>
         <style jsx>
           {`
