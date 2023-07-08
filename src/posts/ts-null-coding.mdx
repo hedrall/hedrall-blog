@@ -1,0 +1,121 @@
+# 論点
+
+- 使い分ける派
+- 寄せる派
+- undefined寄せ派 (<= 個人的にはここ)
+- null寄せ派
+
+# 議論
+
+## 客観的にガイドラインを決めるのが案外難しい
+
+1. `document.querySelector(".存在しないセレクター")`の戻り値は `null` となります。
+2. `document.querySelectorAll("a")[1_000_100_000]`の戻り値は `undefined` となります。 (1_000_100_000は存在しないIndexを意味しています。)
+
+1で`document.querySelector`は、`window`という系に存在しないセレクターをしていされた為、存在しないことを示す`null`を返しました。
+これはいいと思います。
+一方で、2では `document.querySelectorAll("a")` が定義した配列に関して、定義されてないIndexを指定したことで`undefined`が返されています。
+これも良いですね！ここまでは違和感なく使い分けができています。
+
+では、続いて2のケースを関数に切り出してみます。
+
+```typescript
+const getATagElementAt = (index: number) => document.querySelectorAll("a")[index]; // `???`
+```
+
+この関数に`1_000_000_000`を代入した場合は`null`と`undefined`のどちらを返すのが正しいでしょうか？
+関数の意図としては、「全てのAタグの中から`1_000_000_000`番目登場するAタグを取得する」という問題になっているので、そんなAタグがない場合は、
+定義されていないというより、存在しない(=`null`)を返すのが正しのではないでしょうか？
+
+ここで矛盾が生じています。
+2では、`undefined`を返すのが正しいという結論になりましたが、関数に切り出した場合は`null`を返すのが正しいという結論になりました。
+
+なぜこの様な違いが出るかと言うと、2では手続きに着目したのに対して、関数に切り出した場合は意味に着目したからです。
+この様に、客観的にnullとundefinedを使い分けるのは案外難しく、見方によって変わってしまうのです。
+
+さらに根本論でいうと、1. `document.querySelector(".存在しないセレクター")`は本当に`null`が正しかったのでしょうか？
+ブラウザを世界そのものと考えれば、そこに要素が「存在しない」ということになりそうですが、
+そもそもHTMLを書いたページの製作者がいるはずで、その方からすれば「定義していない要素」ということにならないでしょうか？
+
+この場合の矛盾は、主体が存在をコントロールできる側とできない側で`null`, `undefined`が変わることを意味します。
+
+## 論理値の分類問題
+
+さらに細かい話をすると、
+
+```typescript
+// Aタグが9個しかないとして
+const result10 = getATagElementAt(10); // => null
+const resultInf = getATagElementAt(Infinity); // => null ???
+```
+
+この両者の結果は厳密には異なる可能性があります。
+まず、`result10`は10番目の要素が存在しないので、言い換えると「不成立の条件」と言えます。
+一方、`resultInf`の方はどうでしょうか？「無限番目のAタグ」というのは立場によりますが、「成立しえない条件」となります。
+この場合は、存在するしないの問題ではなく、問題自体が成立してないので一概にnullを返すのが正しいとも言い切れません。
+「そんなものは想定していないですよ〜」ということであれば、`undefined`が正しい様にも思えます。
+
+この議論はRDBMSの3論理値を参考にしていますが、否定の論理の中にさらに詳細な区分があるかもしれません。
+
+# 事実
+## nullに関して
+
+- 問題点
+- `typeof null` => `object`
+- リテラルなのに暗黙的
+- undefinedはどうしても自然発生するのでnullに統一は難しい
+- TypeScriptにおいてオプショナル `?` を許しづらくなる
+- `Number(null)` => `0`, `Number(undefined)` => `NaN`
+- 中立
+- JSON.stringifyの結果に残る
+
+# 個人的な感想
+
+論理学(私はわからない)的に厳密性を突き詰めることができるかもしれませんが、
+案外とプログラマーは論理的な厳密性よりも直感的であることを好む傾向があると思っています。
+そのため、`蓋然性`や`連続性`の高い手法を選択していくのが良いと考えています。
+
+# 余談
+
+話は変わりますが、例えばこちらのツイートに関して、表現はさておき内容には関しては同意しています。
+
+https://twitter.com/fumieval/status/1663322995744718848
+
+つまり、`allItemIsNum([])`の様な関数に空配列を渡した戻り値が`true`、`false`どちらがよいか？という議論ですが、
+この場合は、多くの経験のある(JS)エンジニアが連続性を意識して `ture` を選択するのではないでしょうか？
+もちろん、考え方によっては`false`もありえます。
+
+```typescript
+const result_1 = allItemIsNum(['1', '2', '3']); // => true
+const result_2 = allItemIsNum(['1', '2']);      // => true
+const result_3 = allItemIsNum(['1']);           // => true
+const result_4 = allItemIsNum([]);              // => true
+```
+
+ここで言いたいのは、こう言った場合の議論は難しいことです。
+なぜなら、下記の様に異なる観点がぶつかってしまうからです。
+
+- 論理的な厳密さ
+- 戻り値を予測しやすさ
+- 関数の振る舞いとしての正しさ
+- 実用性
+
+この場合は、booleanに閉じているので、`true` or `false`が議論されていますが、
+そうでなければ`null`や`undefined`派はおろか、throwするべき派が現れても不思議はありません。
+
+この様に、登場人物を増やすということが、こう言った境界値の議論をより難しくすることにもなりますので、
+特別な理由がなければ選択肢を減らしていくのが効率的かな考えています。
+
+# 参考
+
+[サバイバルTypeScript](https://typescriptbook.jp/reference/values-types-variables/undefined-vs-null)
+> もしどちらを使うべきか迷ったらundefinedを使っておくほうが無難です。
+> 特にこだわりがないのなら、TypeScriptではnullは使わずにundefinedをもっぱら使うようにするのがお勧めです。
+
+[TypeScriptのレポ](https://github.com/Microsoft/TypeScript/wiki/Coding-guidelines#null-and-undefined)
+> Use undefined. Do not use null.
+> ただし、以下の記載があるので根拠にはつかえない
+> STOP READING IMMEDIATELY
+> THIS PAGE PROBABLY DOES NOT PERTAIN TO YOU.
+
+- http://nmi.jp/2022-10-17-Understanding-Undefined-And-Null

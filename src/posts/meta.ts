@@ -35,11 +35,20 @@ const _PostFileName = [
   'web-components-20211018.mdx',
   'qwik.mdx',
   'doc-creation.mdx',
+  'ts-null-coding.mdx',
 ] as const;
 
 type _PostFileName = (typeof _PostFileName)[number];
 
 const _Meta: { [K in _PostFileName]: _Meta & { slug: _PostFileName extends `${infer N}.mdx` ? N : string } } = {
+  'ts-null-coding.mdx': {
+    slug: 'ts-null-coding',
+    title: 'TypeScriptのコーディングでnullとundefinedを使い分けるべきか',
+    date: '2023-07-08',
+    author: 'hedrall',
+    image: '/images/typescript/logo.png',
+    tags: ['typescript'],
+  },
   'qwik.mdx': {
     slug: 'qwik',
     title: 'qwikをざっくり調べてみた',
