@@ -1,0 +1,84 @@
+> 順次追加していきます。
+
+## はじめに
+
+JetBrainsはEditorの活用方法をチュートリアル形式で提供しています！
+本記事で紹介する機能の中には、チュートリアルに記載されている内容もあります。
+おそらく皆さんが知らない便利機能も色々と見つかると思いますので、ぜひ活用してみてください！
+
+`Cmd` + `Shift` + `A` => `Learn IDE Features`
+
+<img width="792" alt="image" src="https://user-images.githubusercontent.com/20538481/236654111-208910c6-acc6-4613-862b-cad219e99912.png" />
+
+
+
+## 連番を生成する
+
+`Increment Duplicates`というコマンドを利用します。
+
+![Increment Duplicatesのデモ](https://user-images.githubusercontent.com/20538481/223870058-6007e870-1c17-4031-a858-4a96f78d0c62.gif)
+
+Gif画像での操作
+1. `Duplicate Line or Selection`で`console.log(1)`を複製
+2. `Add Selection for Next Occurance`で`1`の部分を複数選択
+3. `Increment Duplicates`を実行
+
+## Github Actionsのワークフローファイルなどで、auto completeが効かない
+
+その他、`.eslint.json`, `openapi.json` などなど。
+
+解決法方としては、こちらの通り JSON Schemaのマッピングを設定する必要がありました。
+https://www.jetbrains.com/help/idea/json.html#ws_json_using_schemas
+
+そもそもなぜ`json`や`yaml`ファイルでサジェストが効くのか？ですが、[JSON Schema Store](https://www.schemastore.org/json/) に登録されているスキーマが当たっています。JetBrainsでは基本的には`Store`のファイルが自動でマッピングされる様なのですが、私の環境では`GithubActions`のワークフローファイルとの紐付けがされていない状態でした。
+
+それでは実際の設定法方です。
+画面下部にMapされているスキーマがあれば表示されるのですが、`No JSON Schema`となっていますね。
+
+<img width="813" src="https://user-images.githubusercontent.com/20538481/205432254-f875c8cc-77e7-42b6-92eb-a438ea571d56.png" />
+
+ここから、`Github Workflow`を選択すればOKです。
+
+<img width="873" src="https://user-images.githubusercontent.com/20538481/205432674-e7e6571b-3d45-41cd-8c03-9be1f:wq83310da.png" />
+
+さらに、ディレクトリ全体に当たる様に設定しておくと便利です。
+
+<img width="922" src="https://user-images.githubusercontent.com/20538481/205432675-ce78481e-0ae0-47d3-b4d9-fdaaaab7738a.png" />
+
+## if, for, Try/Catch文を自動生成する
+
+囲みたい部分を選択してから、
+
+`Cmd` + `Option` + `T` (Surround With)
+
+![surroundWith](https://user-images.githubusercontent.com/20538481/236654695-166d100e-c8c7-443f-8df8-fd9800a0701f.gif)
+
+## その他
+
+- Type-matching completion
+  - `Ctrl` + `Shift` + `Space`
+- Code Assistance
+  - `F1`: 定義もとのDocなどを参照
+  - `Option` + `Space`: 定義部分を表示
+- 変数の利用部分をすべてハイライト
+  - `Cmd` + `Shift` + `F7`
+- 周囲を選択
+  `Option` + `↑ / ↓`
+- ファイル内の定義を一覧する
+  - `Cmd` + `F12`
+- Terminalなど下に出てくるメニューを閉じる
+  - `Shift` + `Esc`
+- 利用箇所を一覧する
+  - `Option` + `F7`
+  - メニューの開閉は `Cmd` + `3`
+- 最近訪れていたファイルをプレビュー付きでリストする
+  - `Cmd` + `Shift` + `E`
+- 文字列検索で一個前に戻る
+  - `Cmd` + `Shift` + `G`
+
+## memo
+
+- git
+  - `blame` => `show diff` を繰り返して、historyを深堀りしていくことができる
+
+

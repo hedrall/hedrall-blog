@@ -1,0 +1,316 @@
+![TopPage](/images/web-components/webcomponents-org-seeklogo.com.svg)
+出典: https://seeklogo.com/
+
+[自ブログ](https://blog.hedrall.work/posts/web-components-20211018)からの転載です。
+
+# 初めに
+
+以前から存在し、ネーミングからモダンフロントの近未来を感じさせるWebComponentsに関して、基本的な技術の概観と2021年現在に考えて何を解決してくれる技術なのかを調査してみました。
+
+# 概要
+
+WebComponentsとはでよくある定義が、**Web標準技術を利用して再利用可能なUIコンポーネントを作成する技術**で、以下の3つの技術から構成されます。
+
+- カスタム要素
+- Shadow DOM
+- HTML テンプレート
+
+イメージとして WebComponents=カスタム要素 と思っている方も多いと思いますが、単なる要素としてではなく、**コンポーネントとして再利用可能**なUIを定義するために必要な機能が補完される物と考えています。
+
+# 要素技術の解説
+
+3つの要素技術に関して、それぞれ概要をみていきます！
+
+## カスタム要素
+
+独自のHTMLタグを定義する技術です。既存のHTMLタグ(a, pタグなど)を拡張することもできます。カスタム要素の定義には`window.customElements.define`関数を利用します。
+
+ex) カスタムのタイトル要素
+
+```html
+<my-title></my-title>
+<script>
+  class MyTitle extends HTMLElement {
+    constructor() { super(); }
+
+    connectedCallback() {
+      const title = document.createElement('h1');
+      title.textContent = 'タイトル';
+      this.appendChild(title);
+    }
+  }
+  customElements.define('my-title', MyTitle);
+</script>
+```
+
+![render result](https://user-images.githubusercontent.com/20538481/137619548-d4450917-0ac5-44a5-91ee-23b833a5a508.png)
+
+カスタムコンポーネントの命名には`-`を必ず利用する縛りになっており、標準要素と識別されています。
+
+> 現在の定義方法はv1で、v0では`document.registerElement`を利用していたのが、今はdeprecatedになっています。
+
+この通り、本来HTMLに存在しない`<my-title>`タグを利用できる様になりました。
+
+## Shadow DOM
+
+Shadow DomはコンポーネントをCSS, JS的に隔離するための機能です。Shadow Domの生成には`attachShadow`を利用します。
+
+```html
+<p>外側</p>
+<style>p {color: blue;}</style>
+
+<!-- ここの配下を Shadow DOMにする-->
+<div id="shadowHost"></div>
+
+<script>
+  // Shadow HostにShadowDomを生成する
+  const shadowHost = document.getElementById('shadowHost');
+  const shadow = shadowHost.attachShadow({mode: "open"});
+
+  // Shadow DOMの中身を生成する
+  const title = document.createElement('p');
+  title.textContent = 'Shadow Dom 内';
+  const style = document.createElement('style');
+  style.textContent = 'p {color: red;}';
+  const container = document.createElement('div');
+  container.appendChild(title);
+  container.appendChild(style);
+
+  // Shadow DOMに中身を追加する
+  shadow.appendChild(container);
+</script>
+```
+
+![render result](https://user-images.githubusercontent.com/20538481/137620045-8c4abe24-da0b-4eac-b762-1f0e6b5973f7.png)
+
+![dom result](https://user-images.githubusercontent.com/20538481/137620055-912257a4-51b4-446d-8df5-9e1ddd5113cc.png)
+
+この様にshadowHostの配下にShadowRootがアタッチされています。また、Shadow Dom内外で互いにCSSが影響を与えていないことが確認できます。
+
+Shadow Domの全体像はMDNで下記の図が説明されています。
+![Shadow Dom](https://user-images.githubusercontent.com/20538481/147379003-aae16f42-5255-45b0-9108-ef636c8b6287.png)
+
+なお、`attachShadow`の引数に渡している `mode` は `open` と `closed` があり、`closed`の場合は上位ノードから参照することは出来ないため、JS的にも隔離することが可能です。
+
+## HTML テンプレート
+
+`<template>`タグ(コンテンツテンプレート要素)と、`<slot>` タグの機能を指します。
+`<template>`は再利用可能なタグを定義する機能です。そのままでは画面上に描画されませんが、要素を clone => append することで再利用することが可能です。また、Shadow Domでは `<slot>` を処理することができ、タグの中に記載したDOMを配置することができます。(SPAフレームワークにもよくある機能ですね。)
+
+```html
+<!-- HTML Template の定義 -->
+<template id="title-template">
+  <h1>
+    <slot name="text">デフォルトのテキスト</slot>
+  </h1>
+</template>
+
+<!-- HTML Template をここに埋め込む -->
+<div id="container">
+  <!-- 埋め込む際に利用されるslot要素 -->
+  <p slot="text">スロットに代入するテキスト</p>
+</div>
+
+<script>
+  const titleTemplate = document.getElementById('title-template');
+  const title = titleTemplate.content.cloneNode(true);
+
+  const shadowRoot = document.getElementById('container').attachShadow({mode: "closed"});
+  shadowRoot.appendChild(title);
+</script>
+```
+
+画面に表示は以下の通り、slotの中身が表示されています。
+
+![render result](https://user-images.githubusercontent.com/20538481/147379116-98429ff4-54e2-4be6-9991-3902950b15d9.png)
+
+続いて、描画されたDOMの構造は下記の通りです。。`#docuemtn-fragment`配下は画面には表示されない部分になります。
+また、`id=container`配下にShadowDOMがあり、中身は`HTML Template`の内容と同じですが、ShadowDOMの横に、Slotの内容が存在しています。
+
+![render dom](https://user-images.githubusercontent.com/20538481/147379089-599a727d-3f42-4091-aab3-6faafc4b3389.png)
+
+実は `<p slot="text">...</p>` の部分はshadow-rootの外に出ていますが、描画される位置は `<slot name="text">...</slot>` の位置になっております。
+ちなみに、`id=container`内の`<slot>`を削除するとテンプレートのデフォルトの文字(=`デフォルトのテキスト`)が描画され、テンプレート内部の`<slot>`を消すと何も文字が表示されなくなります
+
+# WebComponents 改めて
+
+上記の要素技術を組み合わせて、WebComponentsはこんな感じに記述できます。
+
+```html
+<!-- WebComponents用のテンプレート -->
+<template id="title-template">
+  <div>
+    <slot name="title">デフォルト</slot>
+    <slot name="subtitle">デフォルト</slot>
+    <p>パラグラフ</p>
+  </div>
+
+  <style>
+    p { color: blue; }
+  </style>
+</template>
+
+<script>
+  // カスタム要素用のクラスを作成する
+  class MyTitle extends HTMLElement {
+    constructor() {
+      super();
+      const template = document.getElementById('title-template');
+      const title = template.content.cloneNode(true);
+
+      const shadowRoot = this.attachShadow({mode: "closed"});
+      shadowRoot.appendChild(title);
+    }
+  }
+  customElements.define('my-title', MyTitle);
+</script>
+
+<my-title>
+  // 実際に利用する際に、title, subtitleにslotに代入する値をセットする
+  <p slot="title">タイトル</p>
+  <p slot="subtitle">サブタイトル</p>
+</my-title>
+```
+
+結果
+
+![render image](https://user-images.githubusercontent.com/20538481/147379258-5777e671-ea1c-4ee4-86cb-eca835b00eae.png)
+
+![render result](https://user-images.githubusercontent.com/20538481/137628109-66cec6ea-3e05-4f85-83ab-a9fe365ea7bf.png)
+
+# WebComponentsのコンポーネントとしての完成度
+
+ここまででWebComponentsの基本的な技術仕様に関して確認をしてきましたが、Reactなどの既存のSPAライブラリを利用して作成するコンポーネントと比べて基本的な機能の対応を確認してみたいと思います。
+
+- ✅ テンプレート
+- HTMLテンプレートで実現
+- ✅ slot
+- HTMLテンプレート + Shadow Dom で実現
+- ✅ スタイル
+- テンプレートに記載すればいいので、自動でShadowDomによりカプセル化される
+- ❌ prop
+- いい感じのAPIはなさそう
+
+Propsに関してはうまいハンドリング方法をWeb標準で対応している分けではないので、実装でカバーする必要がありそうです。 例として、[こちらの記事](https://itnext.io/handling-data-with-web-components-9e7e4a452e6e) では4つの手法が紹介されています。
+
+- constructorでgetAttributesで取得する
+- コンポーネントクラスにget/setをはやす
+- イベントを利用する
+- イベントバスを利用する
+
+しかし、どれも自前で実装するには少し面倒だなぁという感じは否めませんが、さらに既存のSPAライブラリの様にpropをリアクティブにすることを考えると、かなりの実装が必要になりそうです。
+
+# WebComponentsのエコシステム
+
+上記の様な悩みを解決する様なライブラリが多数開発されている様です。例えば [WEBCOMPONENTS.ORG](https://www.webcomponents.org/) を見ると [便利なライブラリ群](https://www.webcomponents.org/introduction#libraries-for-building-web-components) がまとめられていたりします。
+
+今回はその中でも、star数で一番数が多いの `lit` を調べてみたいと思います！
+
+## [lit](https://github.com/lit/lit)
+
+WebComponentを簡単に作成するためのライブラリです。litを用いて作成するコンポーネントはリアクティブにする事も可能です。
+コンポーネントの実装はわかりやすく、WebComponentsで実装されたReact?と思わせる様なシンプルな記述で実装できます。
+
+```typescript
+export class MyElement extends LitElement {
+  // cssはlitのcss関数を利用して記述できます
+  static styles = css`
+    :host {
+      display: block;
+      padding: 25px;
+      color: var(--my-element-text-color, #000);
+    }
+  `;
+
+  // Propとして外から値を受け取りたいステート
+  @property({ type: String }) title = 'no title';
+
+  // コンポーネント内部だけで利用するステート
+  @state() counter = 0;
+
+  __increment() {this.counter += 1;}
+
+  // コンポーネントの描画部分
+  render() {
+    // html関数によって、簡単にテンプレートを定義できる
+    return html`
+      <h2>${this.title} Nr. ${this.counter}!</h2>
+      <button @click=${this.__increment}>increment</button>
+    `;
+  }
+}
+```
+
+レポジトリはモノレポ構成となっており、カスタムエレメントを作成する `lit-element` と テンプレート管理を担当する `lit-html` が含まれます。lit-htmlの`html`関数は上のコードの通りコンポーネントの描画部分で利用でき、ReactでいうJSXの様な感じです。
+
+ちなみに、プロパティをリアクティブにするためにどの様な実装がされているのか、軽くコードを参照してみましたが、大まかには下記の通り`React`などの更新の流れと同様だと思います。
+
+- コンポーネント定義する時
+- デコレータ(@propertyなど)によって、プロパティにgetter/setterを生やす
+- 更新イベント発生
+- setterを起動
+- update que に詰める
+- 順次状態をupdate
+- html関数を実行しDOMを生成(差分で生成してくれる)
+- 結果を描画する
+
+## [Catalyst](https://github.com/github/catalyst)
+
+もう一つ紹介したいのがこちらで、githubが開発したWebComponentsを作成するためのライブラリです。まだstar数が1kに満たないレポですが、興味深かったのは、ドキュメント冒頭の `How did we get here?`（経緯） です。GitHubではモダンSPAフレームワークがもたらす宣言型UIのパラダイムに乗っておらず、旧来的なselector操作、イベントデリゲーションを好んでいる様です。その様な環境でも**漸進的にWebComponentsの利点を活用していく**ために独自開発を行ったそうです。この辺りはキーワードになってきそうな感じがします。
+
+# WebComponentsが何を解決するか？
+
+MDNで強調されているのは以下の二つの点です。
+
+- 再利用性の向上(拡張性)
+- (スタイルの)カプセル化
+
+ReactやVueを使ってもコンポーネントを開発できるのでは？という疑問が湧いてきそうですが、WebComponentsは別レイヤーの課題を解決するために進められている技術になります。
+
+# WebComponents VS SPAフレームワーク
+
+WebComponentsとSPA技術の対比を見ていくことで、WebComponentsの真価とは何か考えて行きたいと思います。
+結論で言うと、SPAはコンポーネントでアプリケーションを開発するためにツールであるのに対して、WebComponentはその手前でコンポーネントレベルで開発していくためのツールであるという部分が本質的な違いになってきます。
+
+まず、　アプリケーションを開発する`react`や`vue`などのSPAライブラリは、必ずHTML上にルート要素を指定して、その要素配下に描画を担当します。その中で、StoreやRouterを管理し、コンポーネントをまとめ上げ、アプリケーションとして完成させることに責務を持ちます。
+一方、WebComponentsの場合は特定のコンポーネントの描画にのみ責務を持ちます。もっと言えば、DOMにアプリケーションをマウントするのではなく、**カスタム要素を定義する事でアプリケーションに対して機能を提供するだけ**です。
+
+この違いをもう少し考察していくと、SPAアプリケーションは縦割りなのに対してWebComponentsはネストが容易と言えます。SPAの場合は[マイクロフロントエンド](https://martinfowler.com/articles/micro-frontends.html)的に画面を縦割りする事は比較的に簡単ですが、例えばReactの中でVueを使うのは基本的にBadPracticeになると思います。一方で、WebComponentsはコンポーネントの中に完全に閉じたレベルの実装になるため、SPAの中で利用することも、jQueryの中で利用することも、WebComponentsの中でWebComponentsを利用することも容易です。つまり、WebComponentsが大切にする再利用性の観点で非常に柔軟であり、SPAフレームワークより、もっと低テイヤーでWEB標準に従って機能開発を効率的に進めることができます。
+
+そのため、両者の関係性として、SPAライブラリがWebComponentsの恩恵を吸収し、アプリケーションを開発しながら、コンポーネントのレイヤーでより再利用性をWebComponentsで高めていくという流れが考えられます。AngularやVueでは標準ツールで、コンポーネントをWebComponents化する事ができる様です。
+
+- Angular => WC: ネイティブで対応している https://angular.jp/guide/elements
+- Vue => WC: 公式対応している様子 https://v3.vuejs.org/guide/web-components.html#passing-dom-properties
+- React => WC: いいツールはない感じ？
+
+# WebComponents構築系ライブラリの利用に関して
+
+WebComponentsを利用する場合でも大抵の場合はJSXの様に便利なテンプレートや状態バインドが欲しくなると思います。
+では `lit` を利用した場合、結局特定の技術基盤にロックインされてしまうのか？という部分が気になりました。(条件によりますが)個人的には **コンポーネントの開発に閉じているか** が、ライブラリ選定のポイントになるかと感じました。確かにWebComponentsを利用していても、StoreやRoutingを利用してコンポーネントをまとめ上げアプリとして仕上げるSPAと同等レベルの機能があればReactを利用するのとなんら変わらない状態になります。もちろんうまく疎結合に実装されたコンポーネントは可搬になりますが、Storeなどに依存した時点で再利用性が低下します。一方、どのよな仕組みであれコンポーネントの提供に閉じていれば（ほとんど）ShadowDomで隔離された世界の実装だけに止まり、アプリケーション基盤の選択は自由です。つまり、litを利用した場合はコンポーネントとして特定の技術基盤に乗りつつ、アプリケーションとしては自由な状態が実現できるため、既存のSPAフレームワークと比較して、漸進的な導入が可能がしやすいというのは重要なポイントです。前述したCatalystの様にjQuery/vanillaの様なレガシーなパラダイム下でも、コンポーネントの利点を徐々に組み込んでいく事が可能になります。
+
+# その他考えた事
+
+- オーバーヘッドは小さそう
+- 今回Litで作成した最小限のコンポーネント: 4kB
+- Reactだと(react-dom含め)40kBほど
+- 利用可能なカスタムエレメント一覧を取得する様なメソッドはなさそうなので、Web側の使い勝手は改善の余地があるかも
+
+# まとめ
+
+2011年にGoogleが提唱してからしばらく、幾度となく元年が訪れつつ未だに未知の技術でもあるWebComponentsですが、技術の概要、エコシステム、使い所などを検討して見ました。既存のSPAフレームワーク系が巨大で鈍足になり、より軽量な基盤が求められている昨今では、WebComponentsの特徴である漸進的な導入のしやすさは大きな利点になりますし、ブラウザ対応状況も申し分ない状態が整ってきています。また、デザインシステムの一部としてうまく活用していく事で、コンポーネント単位でUIガバナンスをとっていくのにも有用かもしれません。
+今後、本業の方でも活用できる場面があるのではないかと期待しています。
+
+末筆ながら、ここまで読んで頂きありがとうございます。
+
+# 参考
+
+- [MDN](https://developer.mozilla.org/ja/docs/Web/Web_Components)
+- [lit](https://github.com/lit/lit)
+- [catalyst](https://github.com/github/catalyst)
+- [React公式のWebComponentに関して](https://ja.reactjs.org/docs/web-components.html)
+- [Vue と Web コンポーネント](https://v3.ja.vuejs.org/guide/web-components.html)
+- [Angular Elements概要](https://angular.jp/guide/elements)
+- [Micro Frontends](https://martinfowler.com/articles/micro-frontends.html)
+- [次の時代のCSS in JSはWeb Componentsを従える](https://zenn.dev/uhyo/articles/next-gen-css-in-js)
+- [Web Componentsについて気になること、泉水さんに全部聞いてきました！](https://html5experts.jp/shumpei-shiraishi/24239/)
+

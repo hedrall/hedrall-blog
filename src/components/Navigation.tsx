@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { useRouter } from "next/router";
-import Burger from "./Burger";
-import { useState } from "react";
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import Burger from './Burger';
+import { useState } from 'react';
 
 export default function Navigation() {
   const router = useRouter();
@@ -9,33 +9,26 @@ export default function Navigation() {
   return (
     <>
       <Burger active={active} onClick={() => setActive(!active)} />
-      <div className={"container " + (active ? "active" : "")}>
+      <div className={'container ' + (active ? 'active' : '')}>
         <ul>
           <li>
-            <Link href="/">
-              <a className={router.pathname === "/" ? "active" : null}>About</a>
+            <Link href="/" legacyBehavior>
+              <a className={router.pathname === '/' ? 'active' : null}>About</a>
             </Link>
           </li>
           <li>
-            <Link href="/posts">
-              <a
-                className={
-                  router.pathname.startsWith("/posts") ? "active" : null
-                }
-              >
-                記事一覧
-              </a>
+            <Link href="/posts" legacyBehavior>
+              <a className={router.pathname.startsWith('/posts') ? 'active' : null}>記事一覧</a>
             </Link>
           </li>
           <li>
-            <Link href="/my-works">
-              <a
-                className={
-                  router.pathname.startsWith("/my-works") ? "active" : null
-                }
-              >
-                活動実績
-              </a>
+            <Link href="/my-works" legacyBehavior>
+              <a className={router.pathname.startsWith('/my-works') ? 'active' : null}>活動実績</a>
+            </Link>
+          </li>
+          <li>
+            <Link href="/tools" legacyBehavior>
+              <a className={router.pathname.startsWith('/tools') ? 'active' : null}>Tools</a>
             </Link>
           </li>
         </ul>

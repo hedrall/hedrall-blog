@@ -1,0 +1,383 @@
+![reg-suit](https://user-images.githubusercontent.com/20538481/167508962-8eb0bc04-3821-43f5-af52-d6f20d283949.jpeg)
+
+# 概要
+
+こんにちは！
+皆さんはビジュアルリグレッションテスト(VRテスト)を活用していますでしょうか？
+この記事をご覧になっている方には周知のことですが、Webフロントはちょっと変更しただけでも見た目にずれが出てしまう事はよくありますよね。リリースのたびに目視で確認するのも相当な慧眼が求められる辛い作業になりますし、テストコードで対処するのも困難なので運用上の課題になる事が多くあります。そこで、スクリーンショットで変更を確認できるVRテストが気になっている方も多いと思います。
+
+本記事では、大体知っているけど、なかなか後回しになっていたVRテストの環境構築方法を分かりやすく解説していきたいと思います！
+
+# そもそもなにが出来るのか？
+
+今回解説するのは [reg-suit](https://github.com/reg-viz/reg-suit) というnpmパッケージを使ったVRテストです。Githubのstar数が870ほどのライブラリですが、現状画像回帰テストを行うためのOSSで定評のありそうな物は `reg-suit` 一択だと思われます。(E2E系のSaaSには機能が搭載されている事も多いと思います。)
+
+
+では、`reg-suit`はどんな事をしてくれるのか？ということですが、基本的には
+
+1. 2枚の画像を比較して、差分を検知(して通知)
+2. レポートの作成
+
+になります。よく勘違しやすい部分として、`reg-suit`でスクリーンショットを取ることはできません。新旧の画像が既に用意されている前提で、それらの差分を分かりやすく把握出来るようにしてくれます。そのためスクリーンショットを取得するための環境は別途構築する必要がありますので後述します。
+
+`2枚の画像を比較して、差分を検知(して通知)`は、GithubのPullRequestなどで、変更前のスクリーンショットと変更後のスクリーンショットの差分を確認する事ができます。`reg-suit`はGithub Actionsで実行する事ができ、差分検知結果はGithubのPRに自動コメントする事が出来るので、下記の様に見ることができます。
+
+![PRコメント](https://user-images.githubusercontent.com/20538481/167513432-e311401a-ba1f-425f-9c7e-4710c7386b1a.png)
+
+> サンプルはこちらに公開されています。<br />
+> https://github.com/reg-viz/reg-puppeteer-demo/pull/5
+
+これで変更があった際は簡単に把握できますね！
+
+`2. レポートの作成`に関してですが、先程の画像の中のリンクからレポートに飛ぶ事ができます。
+
+> レポートのサンプルはこちらで公開されています (Check this reportのリンクをクリックしてください)。<br />
+> https://github.com/reg-viz/reg-puppeteer-demo/pull/5
+
+レポートの中身は以下の様になっています。
+
+![レポート詳細](https://user-images.githubusercontent.com/20538481/167513302-1dce9de5-ccff-4144-aee7-c2bc7e8aa94d.png)
+
+Githubのコメントと同じく見た目に変更が起きたChangedの画像(index.png)がリストアップされています。
+
+更に詳細ページを開いてみるとこんな感じです。
+
+![レポート詳細](https://user-images.githubusercontent.com/20538481/167513311-4c66f4f4-908a-4313-ac09-73ff8da688bd.png)
+
+変更点はコメント数が 3 => 6 に増えている様ですが、様々な方法で差分を目視確認できます。個人的におすすめは`Toggle`で、2枚の画像を交互に表示する事ができるので、どこが変更されたかすぐに理解する事ができます！
+
+以上の通り、VisualRegressionテストを構築する事で面倒で退屈なデザイン確認を効率的に進められる様になります。
+
+# reg-suitの動き
+
+reg-suitの動作は色々な要素(githubやAWS S3など)に依存するため、ぱっと理解しづらいところがありますので、分かりやすく図にしてみたいと思います。
+
+![reg-suitの動き](https://user-images.githubusercontent.com/20538481/167734745-d88be04a-8881-42d3-91ca-fb3bafd60e13.png)
+
+では丁寧に解説していきたいと思います。
+まずは前提ですが、今回は`feature/xxx => develop`へのプルリクエストを考えます。また、feature/xxxがdevelopからブランチを切ったタイミングをコミットハッシュが`2dcf...`の時とします。つまり、`2dcf...`のときのスクリーンショットを現在のスクリーンショットと比較することが今回の目的になります。
+
+VRテストの実行は、PRで実行されるGithub Actionsの中で行われます。Github Actionsの中の主な作業は図の通りで、スクリーンショットの取得 => 比較 => uploadという流れになります。upload先は、S3の中にディレクトリをコミットハッシュで切って、その中に保存してくれます。
+
+ちなみに、Github Actionはon pushで動作するように設定しているので、merge後にはmerge commitのハッシュで最新のスクリーンショットがuploadされます。
+
+# 使うツール
+
+続いて、今回の環境構築で利用するツールを紹介します。
+
+1. reg-suit
+2. Playwright
+
+`1. reg-suit`の概要は前述の通りです。また、公式のレポジトリを見るとわかる通り、外部サービスとの連携部分などを [プラグイン](https://github.com/reg-viz/reg-suit#plugins) として分離されています。今回の例ですと以下のプラグインを利用しています。
+
+1. reg-keygen-git-hash-plugin
+   - 比較するべきコミットのhashを取得する
+2. reg-notify-github-plugin
+   - 画像の比較結果をプルリクのコメントに投稿する
+3. reg-publish-s3-plugin
+   - 新規のスクリーンショットをS3にアップロードする
+
+これによって保存先をGCPにしたり、バージョン管理をGitlabにしたりが出来ます。
+
+`2. Playwright`はスクリーンショットを取るために利用します。Microsoftが開発しているE2Eテストツールで、Githubのスターは**37.4k**と非常に人気があり、私もいくつか使った中でとりわけ利用しやすいツールと思っています。
+
+ちなみに、今回は**Storybookを使いません**。VRテスト環境の構築方法でGoogle検索して見つかる方法のほとんどが`Storybook + reg-viz/storycap` を利用しています。もともとStorybookを利用しているプロジェクトではきめ細かいスナップショットが管理できてよいのですが、Storybookを利用していないプロジェクトの場合、そもそもStorybookを導入・管理するコストが取れずVRテストを断念している方もいるのではないでしょうか？
+
+しかしながら、前述の通りreg-suitのVRテスト部分とスクリーンショットを取得する部分は別なので、スクリーンショットを取得する方法さえあればStorybookを利用する必要はありません。そこで、今回はPlaywrightを利用してスクリーンショットを取得する方法で解説していきたいと思います。
+
+# スクリーンショットを取る
+
+Playwrightの利用方法は [公式](https://playwright.dev/docs/intro) に分かりやすく解説されているので、ここでは簡単に紹介します。
+
+まずは install！
+
+`npm i -D @playwright/test && npx playwright install`
+
+続いて、プロジェクトルートに設定ファイルを作成します。
+
+`playwright.config.ts`
+
+```typescript
+import { PlaywrightTestConfig, devices } from '@playwright/test';
+import * as path from 'path';
+
+const config: PlaywrightTestConfig = {
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  use: {
+    trace: 'on-first-retry',
+  },
+  testDir: path.resolve(__dirname, './vr-test'),
+  expect: {
+    toMatchSnapshot: {
+      maxDiffPixels: 5,
+    },
+  },
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+  ],
+};
+export default config;
+```
+
+ポイントとしては、`testDir`を設定して実行ファイルの読込先を`~/vr-test/*`に指定しています。PlaywrightはE2Eテストフレームワークなので、`*.spec.ts`ファイルを作成していくのですが、みなさんのレポジトリには(`jest`などの)既存のスペックファイルがあったりすると思うので、明確に指定しています。
+
+続いて、実行ファイルを作成します。
+
+`vr-test/index.spec.ts`
+
+```typescript
+import { test, Page } from '@playwright/test';
+import * as path from 'path';
+
+// テストケースの並列実行を許可する
+test.describe.configure({ mode: 'parallel' });
+
+test.describe('Playwright [スナップショットを取る]', () => {
+
+  // 書く test の前に実行
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({
+      width: 1920,
+      height: 1080,
+    });
+    // ページを開く
+    await page.goto('http://localhost:3000');
+  });
+
+  test('TopPageのスクリーンショットを取得', async ({ page }) => {
+    await page.screenshot({
+      // スクリーンショットの保存先
+      path: path.resolve(__dirname, './screenshots/top-page.png'),
+      fullPage: false,
+    });
+  });
+});
+```
+
+全体的に`Jest`と同じような書き口になっており、これだけのコードでスクリーンショットを取得する事ができます。もちろんコードを工夫すれば、他のページに移動したり、モダールを開いたりしてスクリーンショットを取る事もできます。更に、CSSセレクターを使って要素ごとにスクリーンショットを取る事もできるので、是非おためしてください！
+
+参考: https://playwright.dev/docs/screenshots
+
+では、実際に実行していきたいと思います。まずは、皆さんのフロントエンドをローカルで起動してくだい。↑のコードでは`http://localhost:3000`でページにアクセスが出来る想定になっています。
+
+続いて、Playwrightを実行します。
+
+`playwright test`
+
+すると、`vr-test/screenshots/top-page.png`が生成されます！
+
+# VRテスト
+
+続いてはreg-suitを実行して、VRテストを実行していきたいと思います。
+
+まずはローカルで実行してみます。
+
+最初に install ！
+
+`npm install -D reg-suit`
+
+続いて、プロジェクトルートに設定ファイルを作成します。
+
+`regconfig.json`
+
+```json
+{
+   "core": {
+      "workingDir": ".reg",
+      "actualDir": "vr-test/screenshots",
+      "thresholdRate": 0.01,
+      "ximgdiff": {
+         "invocationType": "client"
+      }
+   },
+   "plugins": {
+      "reg-keygen-git-hash-plugin": true,
+      "reg-notify-github-plugin": {
+         "prComment": true,
+         "prCommentBehavior": "default",
+         "clientId": "xxxxxxxxxxxx/yyyyyyyyyyyyyyyyyyyyyyyyy"
+      },
+      "reg-publish-s3-plugin": {
+         "bucketName": "{プロジェクト名}-reg-suit-screenshot-sss"
+      }
+   }
+}
+```
+
+各部の簡単な説明です。
+
+- `actualDir`: スナップショットが格納されているディレクトリを参照しています。
+- `thresholdRate`: はどれだけ画像がずれたら変更があったとみなすか？を設定してます
+  - 数値は適当なので、いじってみてください！
+- pluginsは各プラグインの設定です
+  - `reg-notify-github-plugin`:  githubのPRにコメント投稿するプラグイン
+    - `clientId`: 投稿するクライアントのID。後ほど設定するので、ここでは適当でOKです
+  - `reg-publish-s3-plugin`: S3にアップロードするためのプラグイン
+    - `bucketName`: ご自身でスクリーンショットを保存しておくS3バケットを作成してください
+
+それでは実行します！
+
+`AWS_SDK_LOAD_CONFIG=true reg-suit run`
+
+> S3へのupload作業にはAWSのクレデンシャルが設定されている必要があります。
+
+サンプル
+
+![reg-suit実行サンプル](https://user-images.githubusercontent.com/20538481/167741178-0f001a9b-09d6-48d1-ae5b-e1452d803084.png)
+
+以上により、スクリーンショットがS3にアップロードされました。また、`Report URL`に書かれているリンクを参照すると、比較結果を見る事ができます。
+
+# Github Actionsに乗せる
+
+Github Actionsで自動的にVRテストが実行される様に環境を構築していきます。まずは先程説明したGithubのPRにコメントを投稿するreg-suitのClientIdを取得します。
+作業方法は [こちらの通り](https://github.com/reg-viz/reg-suit/blob/master/packages/reg-notify-github-plugin/README.md#github-app-and-client-id) です。Github Appsにreg-suieをinstallすると、reg-suit AppからクライアントIDを取得する事が出来るようになります。取得したクライアントIDは`regconfig.json`に追記してください。
+
+続いて、Github Actionのワークフローを定義します。とその前に、reg-suitはS3を利用するのでGithub ActionsにS3へのアクセス権限を付与する必要があります。権限の渡し方は色々ありますが、今回は特別なAssuming Roleを作成する方法で進めます。
+
+IAM Roleの作成方法は[こちら](https://github.com/aws-actions/configure-aws-credentials#sample-iam-role-cloudformation-template) にCloudFormationテンプレートのサンプルが乗っており、基本はこれをそのまま活用すればOKです！
+
+`regSuiteRole.yaml`
+
+```yaml
+Parameters:
+  GitHubOrg:
+    Type: String
+  RepositoryName:
+    Type: String
+  OIDCProviderArn:
+    Description: Arn for the GitHub OIDC Provider.
+    Default: ""
+    Type: String
+
+Conditions:
+  CreateOIDCProvider: !Equals
+    - !Ref OIDCProviderArn
+    - ""
+
+Resources:
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: '' # {ロール名を設定してください。}
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRoleWithWebIdentity
+            Principal:
+              Federated: !If
+                - CreateOIDCProvider
+                - !Ref GithubOidc
+                - !Ref OIDCProviderArn
+            Condition:
+              StringLike:
+                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubOrg}/${RepositoryName}:*
+
+  GithubOidc:
+    Type: AWS::IAM::OIDCProvider
+    Condition: CreateOIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      ThumbprintList:
+        - 6938fd4d98bab03faadb97b34396831e3780aea1
+
+Outputs:
+  Role:
+    Value: !GetAtt Role.Arn
+```
+
+CloudFormation実行時のパラメータが３つありますが、実行時に`GitHubOrg`と`RepositoryName`を入力すればOKです！
+
+> (GithubレポのURLは `https://github.com/{GitHubOrg}/{RepositoryName}となっています。` )
+
+これを実行すると、IAMロールが作成されるのでご確認ください。
+
+ちなみに、インフラのコード化にAWS CDKを利用している場合も、以下の用にしてCFテンプレートを取り込み、パラメータを指定する事ができます。
+
+```typescript
+// 注意: CDK V1のimportです
+import * as cfInclude from '@aws-cdk/cloudformation-include';
+
+new cfInclude.CfnInclude(this, 'create-reg-suit-github-actions-role', {
+  templateFile: pathFromSrc('./regSuiteRole.yaml'),
+  parameters: {
+    GitHubOrg: 'ORG名',
+    RepositoryName: 'レポ名',
+  },
+});
+```
+
+では、準備が整いましたので、GithubActionのワークフローを書きましょう！
+
+`.github/workflows/vr-test.yaml`
+
+```yaml
+name: Visual Test
+
+on: [push] # pushしたときに起動させる
+
+jobs:
+  reg-suit:
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    strategy:
+      matrix:
+        node-version: [17.x]
+
+    steps:
+      -
+    # セットアップ
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    # 先ほど作成したIAM Roleから、AWSクレデンシャルを取得する
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: ap-northeast-1
+        role-to-assume: {ロールのARN}
+        role-session-name: MySessionName
+
+    # パッケージのインストール
+    - name: setup
+      run: npm install --prod=false
+    - uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    # reg-suit用
+    - name: workaround for detached HEAD
+      run: |
+        git checkout "${GITHUB_REF#refs/heads/}" || git checkout -b "${GITHUB_REF#refs/heads/}" && git pull
+
+    # みなさんのアプリケーションを起動してください！
+    # 以下は一例
+    - name: build frontend
+      run: npm run build
+    - name: serve local
+      # expressでホストしているが、foreverでプロセスを永続化する
+      run: npm i -g forever && forever start -c "node local.js" ./
+
+    # スクショを取る
+    - name: take screenshot
+      run: npm run screenshot
+    # VRテストを実行！
+    - name: run vr test
+      run: npm run vr
+```
+
+注意点としては、皆さんのアプリケーションを起動するときに、プロセスの永続化を行わないとワークフローがハングしてしまいます。私の場合はローカルではexpressを利用してReactアプリをホストしていたので、foreverをインストールしてプロセスを永続化しました。
+
+# まとめ
+
+reg-suitの解説記事はたくさんありますが、個人的にわかりやすい情報が少なかったのでまとめ直してみました。
+
+やっぱり初期構築時は多少面倒なのは否めませんが、Storybookに依存する必要がない点はぐっと難易度が下がったのではないでしょうか？フロントエンドのUIテスト作業はプロダクトが小規模でもすぐに退屈で面倒な作業になってきますので、もしまだ活用されてない方は是非参考にしてDX改善を行って頂けると幸いですｍｍ

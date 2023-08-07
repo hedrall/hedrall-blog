@@ -1,0 +1,234 @@
+![pact-logo](https://user-images.githubusercontent.com/20538481/173459948-57e93fb1-3881-4867-82b0-ec48f5da6d90.png)
+
+# 概要
+
+こんにちは。みなさんはタイトルにある、消費者駆動契約テスト(Consumer Driven Contract Testing, 以下CDC Testing)をご存知でしょうか？これは、マイクロサービス間のIFの整合性をテストするの仕組みです。
+
+本記事ではCDC Testingの概要と、Node.jsでCDC Testing を実行する為のPactというテストフレームワークの紹介をしていきたいと思います。
+
+# CDC Testingとは
+
+システム開発を行う中では、他のシステムとの連携を行うシーンが多々あります。そんな時に、どんなパラメータを送ったらどんなレスポンスをしてくれるのか？について、まとまったドキュメントがなかったりとか、自分のシステムを変更する時にシステム間のIFの整合性を取るのが大変だったりと課題が発生します。
+
+この、「どんなパラメータを送ったらどんなレスポンスをしてくれるのか？」をCDC Testingでは契約(Contract)と読んでいます。つまり、CDC Testing はシステム間のやり取り(Interaction)の詳細をスペック化(ドキュメント化)し、そのスペックに沿って出入力の正しさを確かめるテストです。
+
+（そのため、IFに関するテストであり、機能に関するテストではないということになります。）
+
+では、なぜIFに限定したテストを行うのかというと、マイクロサービス群を統合テストするのが大変だからです。例えば、10個のマイクロサービスからなるシステム全体を統合テストしようとすると、10個全ての環境を立ち上げる必要があり非常に時間がかかってしまします。
+
+一方、マイクロサービス間を分離して個々のマイクロサービスの範囲で統合テストをする場合、接続先のマイクロサービスは全てstab化する必要がでてきますが、その場合はサービス間の連携が上手く行っているか全く分からない状態になります。
+
+そこで、CDC Testingは、サービス間の詳細なインタラクション(=契約)をスペック化する事で、統合テストの範囲を切り離しつつ、少なくともIFに関しての整合性が維持される様にテストしていく事ができます。
+
+まとめると以下の図のとおりです。
+
+![CDC_summary](https://user-images.githubusercontent.com/20538481/173460165-37790dc9-e4b8-4780-afe9-543653aa5fc9.png)
+
+Pact公式ドキュメントより: https://docs.pact.io/
+
+Consumer, Providerという用語ができてますが、システム間連携において、利用者側と提供側を区分けする為の概念ですので、両者の例としてはAPI vs APIであったり、フロントエンド vs APIのようになったりします。
+
+## Pactとは？
+
+CDC Testingの為のテストフレームワークですが、Code First で記述できる点が特徴です。もし、上図のContractにあたるスペックを手動で管理しようとすると、それだけで大変な作業になってしまいます。
+
+ではPactを利用する場合のテストを構築の流れは以下のとおりです。
+
+1. Consumer側でJestなど利用してProviderへAPIリクエストを投げるテストを記述します(Consumer Drivenですね)。この時、Pactフレームワークを使ってMockサーバを定義し、モックサーバに対してリクエストを投げるテストを記述するのですが、このモックサーバの定義がContractスペックに吐き出されます。
+
+2. 1で生成されたスペックをProviderに共有します。ただ、システム間でスペックを上手く共有する手法を検討するのも大変なので、基本的には [PactBroker](https://docs.pact.io/getting_started/sharing_pacts) というスペックを交換したり、検証履歴を記録しておくためのツールがDocker Imageなどで公開されているのでそれを利用するか、 [PactFlow](https://pactflow.io/) というSaaS版も提供されています。
+
+3. Provider側にもPactフレームワークを使ってテストを記述します。Provider側のAPIサーバーを立てて於けば、スペックを読み込んだPactフレームワークがスペックに定義されたリクエストを送信し、レスポンスを検証してくれます。PactBrokerを利用している場合は検証結果を記録してくれます。Consumer, Providerでデプロイを行う際は、[can-i-deploy](https://docs.pact.io/pact_broker/can_i_deploy) というツールを利用することで、検証済みのバージョンかどうかをPactBrokerからCI上で読み取る事ができます。
+
+![pact-summary](https://user-images.githubusercontent.com/20538481/173461517-8efdae39-9116-48e1-8a57-d0a1a300492f.png)
+
+公式ドキュメントより: https://docs.pact.io/getting_started/how_pact_works
+
+ちなみにPact = 協定という意味があるそうです。
+
+## (Pactの細かな特徴)
+
+- 言語中立
+  - ぱっと見11言語に対応 (https://docs.pact.io/implementation_guides/cli)
+- 認証・認可ヘの対応
+  - => 専用のライフサイクルフックで再現可能
+- 状態(DBのデータなど)
+  - => 専用のライフサイクルフックで準備可能
+- GraphQL => 検証可能
+
+## Pact.jsの使い方
+
+基本的には[pact-workshop-js](https://github.com/pact-foundation/pact-workshop-js) というレポジトリが公開されており、基本的な動作のハンズオンが行える用になっていますので、時間がある方はこちらをやって頂くと理解が深まります。(一部そのままでは動かないコードがあり、バグつぶしは必要でした。)
+
+ここでは、pact-workshop-jsから抜粋してご説明します。
+
+まず、workshopで登場する例題としては、ECショップのフロント+API構成のシステムで、Orderの一覧、詳細ページの2ページのみ存在するものとしています。
+
+では早速、Consumer Drivenでテストを記述していきます。フロント側のUnitテストの様子です。
+
+```typescript
+import path from "path";
+import {Pact} from "@pact-foundation/pact";
+import {API} from "./api";
+import {eachLike, like} from "@pact-foundation/pact/dsl/matchers";
+
+// 1. Pactのインスタンスを生成
+const provider = new Pact({
+    consumer: 'ECサイト_フロントページ',
+    provider: 'ECサイト_API',
+    log: path.resolve(process.cwd(), 'logs', 'pact.log'),
+    logLevel: "warn",
+    dir: path.resolve(process.cwd(), 'pacts'),
+    spec: 2
+});
+
+describe("API Pact test", () => {
+
+  beforeAll( () => provider.setup() );
+  afterEach( () => provider.verify() );
+  afterAll( () => provider.finalize() );
+
+  describe( "getting all products", () => {
+    test( "products exists", async () => {
+
+      // 2. インタラクションを追加
+      await provider.addInteraction( {
+        state: 'プロダクトが1つ以上存在する場合',
+        uponReceiving: 'プロダクト一覧を取得する事ができる',
+        withRequest: {
+          method: 'GET',
+          path: '/products'
+        },
+        willRespondWith: {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8'
+          },
+          body: eachLike( {
+            id: "09",
+            type: "CREDIT_CARD",
+            name: "Gem Visa"
+          } ),
+        },
+      } );
+
+      // (モックサーバのURLにAPIリクエストが飛ぶようにする)
+      const api = new API( provider.mockService.baseUrl );
+
+      const product = await api.getAllProducts();
+
+      expect( product ).toStrictEqual( [
+        { "id": "09", "name": "Gem Visa", "type": "CREDIT_CARD" }
+      ] );
+    } );
+  } );
+});
+```
+
+`1. Pactのインスタンスを生成` の部分は、Pactの基本情報を設定しています。consumer, providerがその名の通り今回テストするContractのConsumer, Provider双方のシステム名になります。それ以外は細かな設定です。
+`2. インタラクションを追加` では、Providerとのインタラクションを再現するモックサーバを定義しています。まず、`uponReceiving`ではこのテストの望ましい結果を記載する単なるテスト名です。`state`も同様に見えますが、ここには前提条件を説明する文字列を記載し、後述しますがProvider側で状態の復元が必要になる場合にはProvider側でこの文字列を頼りに状態の復元を行います。
+`withRequest`, `willResponseWith`の部分では、どの様なリクエストに対してどの様なレスポンスが返る想定か記述します。`willResponseWith`の中で、`body`の定義に`eachLike`を利用していますが、これはPactの`Matcher`と呼ばれるものです。CDC TestingではIFの整合性をチェックするのが目的なので、例えば`body.id`が正確に`"09"`であるという事を確かめる必要がなく、単に`string`型のプロパティとして存在していればOKということになりますが、その様な指示が`like`, `eachLike`であり、`eachLike`は`like`の配列版になります。なお、eachLikeによって生成されるスペックのイメージは以下の様になります。
+
+```js
+spec = {
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8"
+    },
+    "body": [
+      {
+        "id": "09",
+        "type": "CREDIT_CARD",
+        "name": "Gem Visa"
+      }
+    ],
+    "matchingRules": {
+      "$.body": {
+        "min": 1
+      },
+      "$.body[*].*": {
+        "match": "type" // typeだけ一致すればOK
+      }
+    }
+  }
+}
+```
+
+このテストを実行すると、Contractのスペックが(dirに指定した場所に)吐き出されます。
+
+今回は吐き出されたスペックを別途スクリプトなどを利用して、前述したPactBrokerにuploadするものと想定します。uploadが完了すると、PactBrokerの管理画面では以下の様に見えます！
+
+<img width="1178" alt="スクリーンショット 2022-06-15 7 58 55" src="https://user-images.githubusercontent.com/20538481/173703019-4371a535-b789-4e1d-adff-5608da2538a1.png" />
+
+表みたいなアイコンをクリックすると、検証履歴が見れる詳細画面へ飛びます。まだ、Providerの検証を行っていないので、Provider関係の情報は入っていません。
+
+<img width="1157" alt="スクリーンショット 2022-06-15 7 59 03" src="https://user-images.githubusercontent.com/20538481/173703060-f9931af8-66e0-40a6-b6c2-23ba395f4954.png" />
+
+続いて、Providerをチェックするテストコードを記述します。
+コードのイメージは以下の通りです。
+
+```typescript
+import { APP } from './index';
+import { Verifier } from '@pact-foundation/pact';
+import { VerifierOptions } from '@pact-foundation/pact/src/dsl/verifier';
+import { orderRepository } from './data';
+
+// 1. APIサーバを起動
+const app = APP;
+const server = app.listen(8080);
+
+describe('Pact Verification', () => {
+
+  afterAll(async () => await server.close());
+
+  test('ECサイト_APIを検証', async () => {
+
+    // 2. Verifierを設定
+    const options: VerifierOptions = {
+      logLevel: 'info',
+      providerBaseUrl: "http://localhost:8080",
+      provider: 'ECサイト_API',
+      providerVersion: "1.2.3",
+      pactBrokerUrl: "http://localhost:8000",
+      pactBrokerUsername: "pact_workshop",
+      pactBrokerPassword: "pact_workshop",
+      publishVerificationResult: true,
+      stateHandlers: {
+        "プロダクトが1つ以上存在する場合": async () => {
+          // ここで必要な場合は、状態を再現する
+        },
+      }
+    }
+
+    // 3. 検証を実行
+    await new Verifier(options).verifyProvider();
+  });
+})
+```
+
+1ではご自身で作成したAPIサーバを起動します。
+2では検証用のVerifierインスタンスを設定しています。PactのスペックはPactBrokerからDownloadする想定です。`stateHandlers`の部分はconsumer側の`state`を再現する為のライフライクルフックになっており、ここで指定された状態を再現します。
+3で検証を実行すると、VerifierがAPIに自動的にリクエストを送信し、レスポンスを検証してくれます。
+また、検証結果はPactBrokerにuploadされます。
+
+以下は、検証結果が追加されたPactBrokerの様子です。わざと、検証に失敗した履歴を一つ対しています。
+
+<img width="1166" alt="スクリーンショット 2022-06-15 8 01 00" src="https://user-images.githubusercontent.com/20538481/173703169-63ba0c36-80ba-4bab-9ac1-3e708bceb853.png" />
+
+以上の通り、バージョンを含めてConsumer, Provider間のIFの整合性をConsumer起点でチェックする事ができました！
+
+## おまけ、OpenAPIとの兼ね合いは？
+
+[ドキュメント](https://docs.pact.io/faq/convinceme#but-i-use-swaggeropenapi) でも言及されています。OpenAPIはスペックであり、テストフレームワークではないという部分が違いのようで、OpenAPIスペックをPactBrokerにuploadして検証を行う事もできる用です。
+
+インターフェイスのテストのため、OpenAPIスペックからフロントのAPIクライアントを自動生成している場合などはPactの利用価値は低いと思われますが、前述の通り`state`や、認証状態によるレスポンスの違いを検証できる点はPactの良い部分だと思います。
+
+しかし、Consumer DrivenでPactBrokerによってスペックと検証結果を管理する事ができるので、システムの進化を進めやすいという点は大きな違いになると思われます。
+例えば、OpenAPIの場合はスペックを変更してから、いつConsumer, Providerがそれに対応するのか？今デプロイしても大丈夫なのか？を管理する運用を設計するのには一定の考慮が必要になるので、Pactを利用した改修フローを設計するとシステムの変更がより適切に運用できると思います。
+
+# まとめ
+
+あまり耳にすることが少ないCDC Testingですが、マイクロサービス間でシステム連携をする際は、チーム感で上手く連携していく管理方法の一つとして面白い選択肢だと感じました。
+
+皆さんの開発の一助となれば幸いです。

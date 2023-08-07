@@ -1,0 +1,110 @@
+![TopPage](/images/aws-cdk/logo.jpg)
+
+# 概要
+
+AWS CDKのv2のRCが発表されましたので、正式版のリリースももう少しだと思います。v2ではどんなことが変わっているのか[公式発表](https://aws.amazon.com/jp/blogs/news/announcing-aws-cloud-development-kit-v2-developer-preview/)を元にユーザ目線でまとめます。
+
+ちなみにv2の詳細はこちらの[RFC](https://github.com/aws/aws-cdk-rfcs/blob/master/text/0079-cdk-2.0.md)が参考になります。
+
+# AWS Construct Libraryが一つのライブラリに統合される
+
+v2での変更に関してはほぼこれがメインの目的と言ってもいいと思います。これ以外の変更点は細かな改修か、レポジトリのお掃除の様なものです。
+
+今回統合されたのは各種コンストラクトライブラリです。以前は全てのライブラリが個別にnpmに公開されており、個別に使用したいコンストラクトを`npm i -D @aws-cdk/aws-lambda` の様にインストールして使用していたと思います。
+
+しかしこれには問題がありました。AWS CDKはリリースサイクルが早く、開発途中に追加のパッケージをインストールすると、以前にインストールした他のパッケージとバージョンが異なっていきます。CDKのコンストラクトライブラリ同士が複雑に依存関係を持っていることもあり、しばしばエラーにつながることもありました。さらにバーションを最新に揃えようとした時、 `@aws-cdk/aws-xxx`系のパッケージを全てアップデートするのが手間となっていました。
+
+そこで `aws-cdk-lib` に全てのコンストラクトが格納される様に変更されました(`@aws-cdk/core`も含まれます)。もともとファイルサイズなどを鑑みて分割されていたパッケージが、使い勝手をとって統合された形です。
+
+さらに、`Construct`クラスが独立したnpmパッケージ(`constructs`)として提供される様になりました([レポジトリ](https://github.com/aws/constructs)も分かれています)。以前から`terraform-cdk`などの姉妹プロジェクトの為に切り出されており、v2では本家CDKでもこれを使用する様に変更しました。CDKとCDK for Terraformの実装上の関係性は後々調査していきたいと考えています。
+
+以上より新しいimportは以下の様になりました。
+
+v1
+
+```typescript
+import { App, Stack, Construct, StackProps } from '@aws-cdk/core';
+import { Function, Code, Runtime } from '@aws-cdk/aws-lambda';
+```
+
+v2
+
+```typescript
+import { App, Stack, StackProps } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import { Function, Code, Runtime } from 'aws-cdk-lib/aws-lambda';
+```
+
+現状のインストールコマンド
+
+```shell
+# インストールコマンド
+npm i -D aws-cdk@next #リリース後は aws-cdk@latest
+# 私の環境ではなぜかこれが必要でした。 npm i -D @aws-cdk/cx-api@next
+# CDKのCLIの実行ファイルです。
+
+npm i aws-cdk-lib
+npm i constructs
+```
+
+# Feature flagsの新しい動作がデフォルトに
+
+リリース戦略の一つとして個人的に面白かったので2番目に紹介します。
+
+FeatureFlagとは特定の機能を簡単に切り替えられる様にするフラグです。AWS CDKの場合、v1でのあるAPIの動作が実は正しくないけど修正するとブレーキングチェンジを引き起こしてしまう、という場合に使用されています。
+
+例えば[私のコミット](https://github.com/aws/aws-cdk/pull/13710)ですが、RDSのdbClusterIdentifierを設定する時に、AWS上ではlowercaseで保存されるのにCloudFormation上ではケースセンシティブに保存されるため、その後不整合が起きるというバグがありました。これはCloudFormationのバグと思われますが、CDKでユーザが設定したdbClusterIdentifierをlowercaseに変換してあげると親切だと思われます。しかし、今までのユーザにとってはBreaking Changeになりますし、かと行ってV2が出るまで待つのも危険という状態です。
+
+そこで、feature flagを活用します。v1の後半のバージョンで `cdk init` すると、`cdk.json`に以下の様なcontextが設定されますが、これにより個別のfeatureをオプトインすることができます。
+
+```json
+{
+  "app": "npx ts-node --prefer-ts-exts bin/temp.ts",
+  "context": {
+    "@aws-cdk/aws-apigateway:usagePlanKeyOrderInsensitiveId": true,
+    "@aws-cdk/core:stackRelativeExports": "true",
+    "@aws-cdk/aws-rds:lowercaseDbIdentifier": true,
+    "@aws-cdk/aws-lambda:recognizeVersionProps": true
+  }
+}
+```
+
+例えば`rds:lowercaseDbIdentifier` が私の設定したfeature flagです。
+
+つまり、以下の3段回でリリースをすることで安全に変更することができます。
+
+1. 古いユーザはそのまま
+2. 新規ユーザはBreaking change後の振る舞いを(`cdk init`で)自動的にオプトインさせる
+3. v2ではfeature flagがONの時の振る舞いをデフォルトにする
+
+この様にFeature Flagの運用はご自身のサービスでも参考になると思います。より一般的には`Feature Toggle`という戦略になるらしく[こちらで研究されており](https://martinfowler.com/articles/feature-toggles.html)、解説記事も検索すると出てきます。
+
+また、feature flag の一覧は[こちらのファイル](https://github.com/aws/aws-cdk/blob/f47d5cb48e641515b503bae092cd32071dae2ed9/packages/%40aws-cdk/cx-api/lib/features.ts)にまとまっています。
+
+ちなみにv2では基本的に feature flag の動作がデフォルトになり削除されますが、[こちらの3つ](https://github.com/aws/aws-cdk/pull/14190)は後方互換性のためにOFFに出来る様に残す方針です。
+
+## 改修のサイクルを変更
+
+v2からはAPIのマイナーバージョンアップではブレーキングチェンジが出なくなります。
+
+v1では`@aws-cdk` 配下にstableなAPIとexperimentalなAPIが混在しておりましたが、ドキュメントを参照するなどして個別に確認をする必要がありました。そして、experimentalなAPIに関してはマイナーバージョンアップでブレーキングチェンジされることがありました。v2からは`aws-cdk-lib` に集約されるため、よりstable|experimentalの違いが分かりにくくなるというのもあり、実験的なAPIは`@aws-cdk-experiments` 配下に移動され、0.x.x系のバージョンが振られる様になります。このAPIがstableになった際は`aws-cdk-lib` に移動されます。
+
+## 非推奨(Deprecated)なAPIの削除
+
+deprecatedなAPIが削除されました。v1で使用している場合は、tsdocに@deprecatedコメントがつけられていたので、取消線表示に気づいていたかと思います。
+
+<div style={{textAlign: 'left', 'padding-top': 10}}>
+  <img style={{'max-width': 500}} src="/images/aws-cdk/deprecated.png"/>
+</div>
+
+## 新しいブートストラップリソースがデフォルトに
+
+CDKを初めて使う時は`cdk bootstrap` を実行してデプロイ用のS3バケットを作成すると思いますが、`cdk bootstrap` で生成されるリソースが変更されました。その為、CDKをv2へアップデートした際は再度`cdk bootstrap` を実行する必要があります。
+
+bootstrap用テンプレートの新旧比較は[こちら](https://docs.aws.amazon.com/cdk/latest/guide/bootstrapping.html#bootstrapping-templates)にあります。
+
+## まとめ
+
+ユーザにとっては大きな使い勝手の変更はありませんが、レポジトリの構造や今までなかなか手入れできなかったところが修正されています。
+
+I as Cの発展をど真ん中で推進するAWS CDKをこれからも応援していきたいです。

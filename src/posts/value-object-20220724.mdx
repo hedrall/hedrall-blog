@@ -1,0 +1,386 @@
+![ts-lettermark-blue](https://user-images.githubusercontent.com/20538481/180634538-4c6a8197-a811-41f3-8672-56f5e5bcacc7.svg)
+
+## 概要
+
+ドメイン駆動設計で重要な要素となる値オブジェクトに関して、TypeScriptでは`class`でprimitiveが宣言できないなど言語特性的に工夫が必要な点があり長い間悩んできたのですが、最近になってようやく効果的なパターンが何種類か定まってきたので、本記事では下記のパターンに関して私が実践している値オブジェクトの書き方をご紹介させて頂きます。
+
+アジェンダ
+
+1. プロパティが1つの値オブジェクト
+2. プロパティが2つ以上の値オブジェクト
+3. プロパティ間の組み合わせが存在する値オブジェクト
+
+## 1. プロパティが1つの値オブジェクト
+
+SingleValueな値オブジェクトをTypeScriptで宣言する場合に皆さんはどの様にしますか？
+最も単純なパターンだとclassを利用する方法がありますが、以下の様な問題点があります。
+
+
+例)
+
+```typescript
+class EmailAddress {
+  value: string;
+  constructor (value) { this.value = value; }
+}
+const emailAddress = new EmailAddress('test@test.com');
+```
+
+問題点
+
+1. 毎回 emailAddress.value で値を取り出す必要がある
+2. `JSON.stringify`した結果が、`{ "value" : "test@test.com" }`になる
+
+2に関しては、`toJSON`メソッドを実装する事で対処可能ですが(下記)、
+1に関しては、TypeScriptではプリミティブな型をclassで宣言できないため、対処することができません。
+
+```typescript
+// toJSONを利用する例
+class EmailAddress {
+  value: string;
+  constructor (value) { this.value = value; }
+
+  toJSON(){
+    return this.value;
+  }
+}
+const emailAddress = new EmailAddress('test@test.com');
+console.log(JSON.stringify(emailAddress)); // => "test@test.com"
+```
+
+そこで、[コンパニオンオブジェクト](https://typescriptbook.jp/tips/companion-object) を活用する事ができます。
+コンパニオンオブジェクトを知らない方に簡単に説明すると、classでいう**型**と**static method**を個別に宣言する事ができる機能です。
+
+以下は、携帯電話番号の例として、コンパニオンオブジェクトを利用した値オブジェクトの実装を示します。
+
+```typescript
+type CellPhoneNumber = `${number}-${number}-${number}`;
+// 型と同名で宣言
+const CellPhoneNumber = {
+  // ファクトリ関数
+  create: (value: string): CellPhoneNumber => {
+    if (!/^[0-9]{3}-[0-9]{4}-[0-9]{4}$/.test(value)) {
+      throw new Error(`携帯電話番号の形式が正しくありません。`);
+    }
+    return value as CellPhoneNumber;
+  }
+}
+```
+
+上記を利用してみます。
+
+```typescript
+const num1: CellPhoneNumber = CellPhoneNumber.create('000-0000-0000');
+const num2: string = num1; // OK
+console.log(JSON.stringify(num1)); // => "000-0000-0000"
+```
+
+この様に、`num1`は通常のprimitive型の様に利用する事ができるため、classを用いた場合の欠点を克服できます。
+
+しかし、上記の例ではファクトリの利用を強制する事ができておらず、不正な文字列を代入する事ができてしまいます。
+
+```typescript
+// 不正なStringが代入可能
+const num: CellPhoneNumber = '080-00000000000000000000000000-0000000';
+```
+
+そこで、[type-fest](https://github.com/sindresorhus/type-fest) などに実装されている [Opaque型](https://github.com/sindresorhus/type-fest/blob/main/source/opaque.d.ts) などを利用する事ができます。`Opaque`型を簡単に説明すると、同じ内容の型でも識別子(token)に従って別の型として区別するための型で、以下のような特性があります。
+
+(公称型の特定が得られます。)
+
+```typescript
+type T1 = Opaque<string, 'hoge' /* <- token */ >;
+type T2 = Opaque<string, 'fuga'>;
+
+// NG!
+const v1: T1 = 'hoge';
+// NG!
+const v2: T2 = '' as T1;
+```
+
+これを利用する事で、ファクトリの利用を基本的には強制する事ができます。
+
+```typescript
+import { Opaque } from 'type-fest';
+
+// Opaque型を利用する
+type CellPhoneNumber = Opaque<`${number}-${number}-${number}`, 'CellPhoneNumber'>;
+const CellPhoneNumber = {
+  create: (value: string): CellPhoneNumber => {
+    if (!/^[0-9]{3}-[0-9]{4}-[0-9]{4}$/.test(value)) {
+      throw new Error(`携帯電話番号の形式が正しくありません。`);
+    }
+    return value as CellPhoneNumber;
+  }
+}
+
+// NG!
+const num1: CellPhoneNumber = '080-00000000000000000000000000-0000000';
+// OK!
+const num2: CellPhoneNumber = CellPhoneNumber.create('080-0000-0000');
+```
+
+以上で、SingleValueな値オブジェクトを宣言する事ができました。
+
+## 2. プロパティが2つ以上の値オブジェクト
+
+この場合は、1で掲げた問題点が無いため、普通にclassで値オブジェクトを宣言して特段問題がありません。
+
+```typescript
+type Unit = '円' | 'ドル';
+class Price {
+  unit: Unit;
+  amount: number;
+
+  constructor (props: Price) {
+    this.unit = props.unit;
+    this.amount = props.amount;
+  }
+}
+```
+
+しかし、getter/setterやメソッドを生やす場合は注意が必要です。
+
+```typescript
+class Price {
+  unit: Unit;
+  amount: number;
+
+  // ドルを円に変換する関数
+  get changeDollarToYen(): Price {
+    // Property 'changeDollarToYen' is missing in type
+    return new Price({
+      unit: '円',
+      amount: this.amount * 100 /*適当*/,
+    });
+  }
+
+  constructor (props: Price) {
+    this.unit = props.unit;
+    this.amount = props.amount;
+  }
+}
+```
+
+ドルを円に変換する関数を定義してみましたが、戻り値を作成する所でエラーが発生します。getter/setterやメソッドはクラスの型に含まれるので、newするときは`changeDollarToYen`も引数に渡さなくてはならない状態になっています。
+
+これを避けるため、面倒ですがPropの定義をベースクラスに別途切り分ける方法がおすすめです。
+
+```typescript
+abstract class PriceBase {
+  unit: Unit;
+  amount: number;
+
+  constructor (props: PriceBase) {
+    this.unit = props.unit;
+    this.amount = props.amount;
+  }
+}
+
+class Price extends PriceBase {
+  // ドルを円に変換する関数
+  get changeDollarToYen(): Price {
+    return new Price({
+      unit: '円',
+      amount: this.amount * 100 /*適当*/,
+    });
+  }
+
+  constructor (props: PriceBase /* ← Baseクラスを受け取る */) {
+    super(props)
+  }
+}
+```
+
+ベースクラスは`abstract`にしておくと、`PriceBase`クラスが直接利用ができない事も表現できます。ちなみに、[aws-cdk](https://github.com/aws/aws-cdk/blob/main/docs/DESIGN_GUIDELINES.md#abstract-base) のデザインが参考になっています。
+これで、accessorメソッドを持ったMultiple Valuesな値オブジェクトを定義する事ができます。
+
+## 3. プロパティ間の組み合わせが存在する値オブジェクト
+
+まずObjectのプロパティのValidationには３階層が存在します。
+
+1. プロパティレベル
+2. インスタンスレベル
+3. インスタンス間レベル
+
+> 実践ドメイン駆動設計を参考
+
+1は個別のプロパティへの制約で、上記で説明した携帯電話番号などが例になりますが、`/^[0-9]{3}-[0-9]{4}-[0-9]{4}$/`という正規表現に従わなくてはなりません。
+今回テーマにする2は複数のプロパティ間で発生する制約に関してで、可能な値の組わせを型で表現する方法になります。
+
+例として、あるスーパーマーケットの商品が以下のようになっているとします。
+
+![image](https://user-images.githubusercontent.com/20538481/180668654-05a12805-39f8-4e49-a021-3ee6903439b8.png)
+
+このスーパーでは上図の通り、トマト・キュウリ・鮭・アイスクリームの4種類の食品を販売しています。この内、冷凍食品には賞味期限がないとします。
+ここで、食品を表す`Food`を値オブジェクトとして定義したいと思います。
+
+まずは、classを用いて単純に記述すると以下の様になると思います。
+
+```typescript
+type FoodCategory = '野菜' | '魚' | '冷凍';
+type Vegetable = 'トマト' | 'キュウリ';
+type Fish = '鮭';
+type FrozenFood = 'アイスクリーム';
+class Food {
+  category: FoodCategory;
+  name: Vegetable | Fish | FrozenFood;
+  // 賞味期限
+  appreciationPeriod?: Date;
+
+  constructor (props: Food) {
+    this.category = props.category;
+    this.appreciationPeriod = props.appreciationPeriod;
+  }
+}
+```
+
+しかし、このクラスの3つのパラメータ間には組み合わせが存在します。`category`によって、選択できる`name` が絞られますし、冷凍食品かどうかで賞味期限のあるなしが変わります。
+この制約を実現するために、コンストラクタにvalidationロジックを追加してみます。
+
+```typescript
+class Food {
+  category: FoodCategory;
+  name: Vegetable | Fish | FrozenFood;
+  // 賞味期限
+  appreciationPeriod?: Date;
+
+  constructor (props: Food) {
+    if (this.validate(props)) {
+      throw new Error('値が不正です。');
+    }
+    this.category = props.category;
+    this.appreciationPeriod = props.appreciationPeriod;
+  }
+
+  validate(props: Food): boolean {
+    switch ( props.category ) {
+      case '野菜':
+        return ['トマト', 'キュウリ'].includes(props.name) && props.appreciationPeriod === undefined;
+      case '魚':
+        return props.name === '鮭' && props.appreciationPeriod === undefined;
+      case '冷凍':
+        return props.name === 'アイスクリーム' && props.appreciationPeriod !== undefined;
+    }
+  }
+}
+```
+
+これで、安全に`Food`を生成できるようになりましたが、実は値を利用する際には少し不便さを感じます。
+
+```typescript
+declare const tomato: Food;
+
+if (tomato.category === '野菜') {
+  const now = new Date();
+
+  // 賞味期限内か確認
+  // ↓ TS2532: Object is possibly 'undefined'.
+  if (tomato.appreciationPeriod > now) { ... }
+}
+```
+
+`tomato.category === '野菜'`で条件分岐をしたのにも関わらず、クラス間のプロパティには型の絞り込みが効かないため、`tomato.appreciationPeriod`が`Date | undefined`に推論されています。
+
+これはclassを利用した場合は対象する事ができないため、ここでもコンパニオンオブジェクトを利用する事ができます。さらに、namespaceを組み合わせると型をまとめるのに便利です。
+
+> 参考: [TypeScriptのnamespaceは非推奨ではない](https://qiita.com/yuki153/items/a51878ad6a1ce913af48)
+
+```typescript
+namespace Food {
+  export type Vegetable = {
+    category: '野菜';
+    name: 'トマト' | 'キュウリ';
+    appreciationPeriod: Date;
+  }
+  export type Fish = {
+    category: '魚';
+    name: '鮭';
+    appreciationPeriod: Date;
+  }
+  export type Frozen = {
+    category: '冷凍';
+    name: 'アイスクリーム';
+    appreciationPeriod: Date;
+  }
+}
+type Food = Food.Vegetable | Food.Fish | Food.Frozen;
+const Food = {
+  validate(props: Food): boolean {
+    switch ( props.category ) {
+      case '野菜':
+        return ['トマト', 'キュウリ'].includes(props.name) && props.appreciationPeriod === undefined;
+      case '魚':
+        return props.name === '鮭' && props.appreciationPeriod === undefined;
+      case '冷凍':
+        return props.name === 'アイスクリーム' && props.appreciationPeriod !== undefined;
+    }
+  },
+  create(props: Food): Food {
+    if (!Food.validate(props)) throw new Error('値が不正です。');
+    return props as Food;
+  },
+}
+```
+
+少々定義が長くなりましたが、この記法にはいくつか利点があります。
+
+まず、先ほどのクラス定義と比べて、`Food.Vegetable`, `Food.Frozen`などを明確に定義しているので、どんなFoodの種類が存在するのかが分かりやすくなりました。もちろん、`validation`の中身を読んでいけばロジックから逆算する事ことは可能なのですが、明示的に型定義されていることによって、よりドキュメントとしての価値が向上しています。
+実際に利用者が型を参照するときも、`Food`クラスの定義を見た時点では `category x name x appreciationPeriod = 3 x 4 x 2 = 24通り`の可能性が存在しますが、コンパニオンオブジェクトを利用する事によって、現実に存在可能な4通りまで型を制限する事ができています。
+
+また、先程問題になっていた型の絞り込みが効くようになっています。
+
+```typescript
+declare const tomato: Food;
+
+if (tomato.category === '野菜') {
+  const now = new Date();
+
+  // 賞味期限内か確認
+  // OK!!
+  if (tomato.appreciationPeriod > now) { ... }
+}
+```
+
+> ちなみに、この方法は実践ドメイン駆動設計に記載されている標準型に似ています。今回の例では現実問題として、スーパーマーケートには無数の商品があるため、`category`と`name`に関して上記の様な組み合わせの表現を使う事はないと思いますが、標準型は一連の状態遷移などの表現に利用する目的で紹介されています。
+
+より絞り込みを簡単にするため、`TypeGuard`を宣言しても便利です。
+
+```typescript
+const Food = {
+  create(props: Food): Food { /* ... */},
+  guards: {
+    isVegetable(food: Food): food is Food.Vegetable {
+      return food.category === '野菜';
+    },
+    isFish(food: Food): food is Food.Fish {
+      return food.category === '魚';
+    },
+    isIce(food: Food): food is Food.Cold {
+      return food.category === '冷凍';
+    },
+    hasAppreciationPeriod(food: Food): food is Exclude<Food, Food.Cold> {
+      return food.category !== '冷凍';
+    }
+  }
+}
+
+const now = new Date();
+if (Food.guards.isVegetable(tomato)) {
+  // OK!!
+  if (tomato.appreciationPeriod > now) { ... }
+}
+if (Food.guards.hasAppreciationPeriod(tomato)) {
+  // OK!!
+  if (tomato.appreciationPeriod > now) { ... }
+}
+```
+
+以上で、インスタンスのプロパティ間に組み合わせの制約が有る場合の値オブジェクトを定義する事ができました。
+
+## まとめ
+
+冒頭で紹介した3パターンに関して具体的な実装方法をご紹介しました。まだまだ考慮するべき点はたくさんあるかと思いますが、一定の価値のあるパターンがまとまったと思い、公開させて頂きました。
+他に良い方法や未解決な問題点などあれば別途調査してみたいと思いますので、コメントなどもいただけると幸いです。
+
+長文になりましたが、ここまで読んで頂きありがとうございました 😄

@@ -1,0 +1,397 @@
+![TopPage](/images/openapi/logo.png)
+
+こんにちわ！
+本記事は2021年度の「株式会社カケハシ x TypeScript」アドベントカレンダーの8日目の記事として執筆いたしました。
+
+私が、最近設計開発するWebAppではOpenApiを活用する事にしており、本記事では実践した事の知見が共有できればと考えております！
+
+## OpenApiとは
+
+ご存知の通り[OpenApi](https://github.com/OAI/OpenAPI-Specification) は、プログラミング言語に関係なくAPIの仕様を定義するための仕様です。デモとしては [Swagger Editor](https://editor.swagger.io/) のページが有名です。
+
+OpenApiの成り立ちとしては、元々SwaggerというAPI定義仕様とツール群がありましたが、[こちらの通り](https://www.openapis.org/about) 2015年ころ、ベンダー依存しないオープンなプロジェクトに拡張するためSwaggerのスペックをベースに構築されたAPI定義仕様がOpenApiです。その後 [数々のツール](https://openapi.tools/) が開発されています。
+
+OpenApiの技術方法は json, yaml が選択できますが、いずれにしても一種のJSON Schemaで表現されます ([ex](https://github.com/OAI/OpenAPI-Specification/blob/main/schemas/v3.0/schema.json) )。
+
+OpenApiの強みは スペックを中心として、ドキュメント・サーバ・クライアントなどをある程度自動生成する事ができる点です。
+Api開発は多くの組織での実践を元にした既存のベストプラクティスが多数存在し、いわゆるボイラープレート部分が多いという特徴があります。そのため、自身でベストプラクティスをチェックし続けたり、書かなくても良いコードを書いて車輪の再発明をしてしまうなどの非合理が発生しない様にするために自動生成を活用すれば開発効率の向上に大きく寄与します。
+
+また、自動生成を活用する事で サーバ・クライアント 間の実装を同期させ、整合性を保つ事が可能です。
+
+![生成](https://user-images.githubusercontent.com/20538481/144773721-66ad6f55-0324-47a2-9092-53fc3a720270.png)
+
+近年では少なくともフロントエンドをTypeScriptで記述する事が多いと思いますが、自動生成機能を活用するとサーバ・クライアント間で型を共有する事がで切るので型安全な開発ができ、ドメイン駆動設計のドメインエンティティの様なオブジェクト定義も共有しやすくなります。
+
+## 既存の課題
+
+OpenApiはスペックを中心に各種自動生成が利用できますが、スペック自体が人間への可読性が低いという問題点があります。[デモページ](https://editor.swagger.io/) のペットショップの例でも、非常に多くの記述が必要になる事がわかります。また、あくまでJSON Schemaの為、ある程度 `$ref` などが利用できるものの、スペック内のコンポーネントを再利用するために正規化する作業もやりづらさを感じます。
+
+さらに、OpenApiを単純にドキュメントとしてのみ利用している場合は、APIの実装とAPIスペックを常に手動で同期させ続ける必要が出てきますので、「サーバは開発終わってるんだけど、スペックに反映してないんだよね、、」という状況が発生しやすくなります。
+
+## コードファーストでOpenApiを活用する
+
+いずれにしても、スペックその物をデベロッパーが構築していくというより、逆に実装を真としてスペックを自動的にアプデートする事ができれば、上記の辛さを克服できます。長大で可視性の低いスペックはバイナリと同様に(デバッグ意外で)開発者が読み込む必要が一切なくなります。
+この様な Code First で開発していくためのツールが開発されており、今回は一例として `TSOA` を紹介をしていきたいと思います。
+
+## [TSOA](https://github.com/lukeautry/tsoa) とは
+
+APIのコントローラ定義から、`OpenAPI`スペックを自動生成する事ができます。
+ここでいうコントローラはクリーンアーキテクチャーのコントローラの様な物で、APIエンドポイントがどの様な値を受け取り、どの様な値を自分たちが開発するビジネスロジックに渡すか、そのインターフェイスを定義するクラスです。
+さらに `tsoa` は express(hapi, koaも対応) サーバのボイラープレートを生成できるので後述します。
+なお、今回紹介するコードは [サンプルレポ](https://github.com/hedrall/tsoa-test) 作りましたので、適宜ご参考ください。
+
+ちなみに、`tsoa`は執筆時点でGithubのstar数が1.9kとやや少ない印象を持つ方も多いと思いますが、OpenApi配下にたくさんのツール群がある中ですので界隈では比較的人気を集めているライブラリと言えます。
+
+### コントローラを記述する
+
+今回は get で `/user?id={userId}` にアクセスされた時に, ユーザ情報を返却するエンドポイントのコントローラを記述してみます。
+
+```typescript
+import { Controller, Get, OperationId, Query, Route, Security, Request } from 'tsoa';
+import express from 'express';
+
+class MyUser {
+  constructor (public id: number, public name: string) {}
+}
+
+@Route('user')
+export class UserController extends Controller {
+  constructor() { super() }
+
+  @Get('')
+  @Security('security-name')
+  @OperationId('get-user')
+  public async get(@Request() request: express.Request, @Query() id: string): Promise<MyUser> {
+    console.log('受け取ったID', id);
+    return new MyUser(10000000, 'テストユーザ名');
+  }
+}
+```
+
+この様に `@` を使ったデコレータでAPIとしての定義を補足しながらコントローラを記述していきます。
+
+細かな部分でいくと以下の様になります。
+
+- `@Route('user')と@Get('')` の組み合わせで `/user` でリクエストできる様にする
+- `@Security('security-name')` で認可処理を挟む(後述)
+- `@Request()` で認可処理の結果(ユーザIDなど)を受け取る
+- `@Query()` でクエリストリングのパラメータを定義する
+
+それぞれの意味は分かりやすいと思いますし、デコレータの利用に関しては [Nest](https://docs.nestjs.com/controllers#routing) などのNode.js系バックエンドフレームワークでも採用されている通り、一般的な手法と思われます。
+
+また、コントローラのみを定義することでAPIスペックの生成が行えますので、実装の詳細に関係なく設計を先行させることが可能です。
+
+## OpenApiスペックを生成する
+
+まずはtsoaの設定ファイルを作成します。
+
+~/tsoa.json
+
+```json
+{
+  "entryFile": "api/src/app.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": ["api/**/controller.ts"],
+  "spec": {
+    "outputDirectory": "generated",
+    "specVersion": 3,
+    "specFileBaseName": "open-api",
+    "version": "1",
+    "basePath": "v1",
+    "xEnumVarnames": true,
+    "yaml": true
+  },
+  "routes": {
+    "routesDir": "generated",
+    "authenticationModule": "api/src/authentication.ts"
+  },
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": { "@api/*": ["./*"] }
+  },
+  "ignore": [
+    "**/common/node_modules/**"
+  ]
+}
+```
+
+各部を説明すると以下の通りです。
+
+- `entryFile`: はexpress サーバのエントリーポイント
+- `controllerPathGlobs`: このglob表現に一致するコントローラがspec生成の対象になる
+- `spec`: OpenAPIスペック出力に関する設定
+- `spec.xEnumVernames`: 入れておくとEnumの出力が詳細になり、clientを生成する際に便利です。
+- `routes`: express サーバのボイラープレートを作成するための設定
+- `compilerOptions`: tsconfig.jsonのcompilerOptionsが読みこまれないので、path alias などはここにも書く
+
+これで準備が整いましたので、`npx tsoa spec-and-route` を実行していきます。
+すると、`generated` 配下に `open-api.yaml` が出力されます。
+
+```yaml
+components:
+  examples: {}
+  headers: {}
+  parameters: {}
+  requestBodies: {}
+  responses: {}
+  schemas:
+    MyUser:
+      properties:
+        id:
+          type: number
+          format: double
+        name:
+          type: string
+      required:
+        - id
+        - name
+      type: object
+      additionalProperties: false
+  securitySchemes: {}
+info:
+  title: tsoa-test
+  version: '1'
+  license:
+    name: ISC
+  contact: {}
+openapi: 3.0.0
+paths:
+  /user:
+    get:
+      operationId: get-user
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyUser'
+      security:
+        - security-name: []
+      parameters:
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: string
+servers:
+  - url: /v1
+```
+
+GETリクエストで `/user` というリソースが生成されていることが確認できます。
+また、controllerの戻り値で利用していた `MyUser` という型が `schemas` に定義されており、TypeScriptの型も自動で抽出されていることがわかります。
+
+## tsoaによるrouteの生成
+
+先ほどのスペック生成時に `generated/routes.ts` も生成されています。先述した通り、tsoaはexpressなどのサーバのボイラープレートコードを生成することもできます。
+今回はexpressを例にして進めますが、エントリーポイントではこの様に利用できます。
+
+api/src/api.ts
+
+```typescript
+import express, { ErrorRequestHandler } from 'express';
+import { RegisterRoutes } from '../../generated/routes';
+import cors from 'cors';
+
+const api = express();
+
+api.use(cors());
+// POST Body をJSONパース
+api.use(express.json());
+
+RegisterRoutes(api);
+
+// エラーハンドリング
+const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
+  return res.status(500).json({ message: 'エラーしました。' });
+};
+api.use(errorHandler);
+
+api.listen(8080);
+console.log('start server: port = 8080');
+```
+
+この様に、`RegisterRoutes`関数を`routes.ts`から読み込んで、`express`のインスタンスを渡します。すると、`/user`というAPIリソースを追加してくれて、`/user`にアクセスがあった際には、自動で入力値を(JSON Schemaを利用して) validationしてから、自分が定義したコントローラを呼び出してくれます。`validation` だけでも毎度自分で記載するの面倒だし抜け漏れがあったりしますので非常に便利な部分です。
+
+全体像としては下図の様になります。
+
+![tsoaの全体像](https://user-images.githubusercontent.com/20538481/144935733-13099cf2-2e23-485c-9a04-caaebec1b3bf.png)
+
+Controller以降は実装例になりますが、CleanArchitectureの様にビジネスロジックや、Repository部分を切り出していくと良いかと思います。
+
+## 認可処理
+
+tsoaは認可処理を挟むこともできます。`tsoa.json`の`routes.authenticationModule`に記載したファイルがAuth様もモジュールとしてして登録されます。
+すると、コントローラ定義部分で `@Security`をつけたリソースにアクセスがあった時に、`routes.ts`が入力値をvalidateした後`authenticationModule`を起動してくれる様になります。
+
+コントローラ部分 (再掲)
+
+```typescript
+@Route('user')
+export class UserController extends Controller {
+  constructor() {super();}
+
+  @Get('')
+  @Security('security-name') // セキュリティの設定
+  @OperationId('get-user')
+  public async get(@Request() request: express.Request, @Query() id: string): Promise<MyUser> {
+    console.log('受け取ったID', id);
+    console.log('リクエストユーザID', request.user.id);
+    return new MyUser(10000000, 'テストユーザ名');
+  }
+}
+```
+
+authenticationModuleの例は下記の通りです。
+
+api/src/authentication.ts
+
+```typescript
+import * as express from 'express';
+
+export async function expressAuthentication(
+  request: express.Request,
+  securityName: string,
+  scope?: string[],
+): Promise<{ id: string }> {
+  /**
+   * 認証を行なって、ユーザ情報などを返す
+   */
+  return { id: 'ok' };
+}
+```
+
+`@Security`の引数は `securityName` に入ってくるので、自分で任意の認可処理を実装します。
+また、returnされた値は、コントローラが`@Request() request`で受け取っている`express.Request`インスタンスの `request.user` に格納されます。
+当然`Request`のインスタンスには元々は`user`というプロパティが存在しないため、型補完を効かせるためにはアンビエント宣言の追加をお勧めします。
+
+api/src/type.d.ts
+
+```typescript
+declare module 'express' {
+  interface Request {
+    user: { id: string };
+  }
+}
+```
+
+## tsoaの注意点
+
+便利なtsoaですが、複雑な型定義からはモデルを生成できないことがあります。一例として下記の様なenumライクなコンストを利用することができません。
+
+```typescript
+const OS = {
+  WINDOWS: 'windows',
+  MAC: 'osx',
+} as const;
+type Os = (typeof OS)[keyof typeof OS];
+```
+
+この場合は素直に`enum`を利用します。
+
+```typescript
+enum OS {
+  WINDOWS = 'windows',
+  MAC = 'osx',
+}
+```
+
+> TSでは`enum`は基本的に使うべきでないとされていますが、ツールを捨てるほどのトレードオフかは検討の余地があると考えています。
+
+## openapi-generator
+
+すでに長文になってきているのですが、せっかく`OpenAPI`のスペックを生成できたので、次は APIクライアントを自動生成したいところです。そこで、tsoaからは離れますが、[openapi-generator](https://github.com/OpenAPITools/openapi-generator) を利用します。`openapi-generator`はスペックから各言語のサーバ、クライアント、ドキュメントなどを生成するためのツールです。インストール方法がたくさんありますが、[npm](https://github.com/OpenAPITools/openapi-generator#table-of-contents) を利用するのが一番簡単だと思います。また、[利用できるgeneratorの一覧](zhttps://github.com/OpenAPITools/openapi-generator/tree/master/docs/generators) もまとめられています。今回は例として [typescript-axios](https://github.com/OpenAPITools/openapi-generator/blob/master/docs/generators/typescript-axios.md) を利用して、そのなの通り`TypeScript`と`Axios`を利用したAPIクライアントを生成してみたいと思います。
+
+## クライアントの生成
+
+まずはインストールします。
+
+```
+npm install @openapitools/openapi-generator-cli -D
+```
+
+次に`openapi-generator`も設定ファイルを作ることができます。
+
+~/openapitools.json
+
+```json
+{
+  "$schema": "node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "spaces": 2,
+  "generator-cli": {
+    "version": "5.2.0",
+    "generators": {
+      "client": {
+        "generatorName": "typescript-axios",
+        "output": "./generated/client",
+        "glob": "./generated/open-api.json",
+        "enablePostProcessFile": true,
+        "additionalProperties": {
+          "withSeparateModelsAndApi": true,
+          "apiPackage": "api",
+          "modelPackage": "models",
+          "enumPropertyNaming": "UPPERCASE",
+          "useSingleRequestParameter": true
+        },
+        "typeMappings": {
+          "date": "Date",
+          "DateTime": "Date"
+        }
+      }
+    }
+  }
+}
+```
+
+`generatorName` に `typescript-axios` を指定しています。`additionalProperties`は利用するgeneratorにより異なる設定になるのでドキュメントをご参照ください。
+
+これで準備が整いましたので、クライアントの生成を実行します。
+
+```bash
+openapi-generator-cli version-manager set 5.2.0
+openapi-generator-cli generate
+```
+
+すると、`generated/client` 配下にAPIクライアントのコードが生成されています。中身を確認すると、`client/api/default-api.ts` にAPIクライントの生成器が入っています。生成器は、3種類
+
+- ファクトリパターンっぽいもの
+- 関数型プログラミングっぽいもの
+- オブジェクト思考っぽいもの
+
+がありますが、どれを利用してもOKです！今回はオブジェクト思考っぽいものを利用します。
+
+## 生成されたクライアントの利用
+
+フロントエンドでの利用を想定するコードの例を書きます。
+
+```typescript
+import { DefaultApi, Configuration } from "../generated/client";
+// DefaultApi => オブジェクト思考っぽいやつ生成器
+const client = new DefaultApi(new Configuration({
+  basePath: `http://localhost:8080`,
+  baseOptions: {
+    headers: {
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+  },
+}));
+
+window.addEventListener('load', async () => {
+  // APIへリクエスト
+  const res = await client.getUser({ id: 'dummy-id' });
+  const resElem = document.querySelector('.res');
+  resElem && (resElem.textContent = JSON.stringify(res.data, null, '  '));
+});
+```
+
+`getUser`という関数名は`@OperationId`のしてい値が参考にされます。
+この様に生成されたクライアントを利用してAPIリクエストを行うことで、型安全にリクエストを送ることができます。
+
+# まとめ
+
+長文になりましたがいかがでしたでしょうか？tsoaやopenapi-generatorなどを使ってOpenApiをフル活用する方法をまとめてみました。
+慣れないうちは色々とツールや作業があって難しいと感じる面もあるかと思いますが、うまくOpenAPIを利用することで書かなくても良いコードを自動生成できたり、ベストプラクティスを追いやすくなったりします。またサーバからクライアントサイドまで無理なく型安全に開発することができるため、開発のDXは爆上げは間違えないと思います！
+みなさまの開発の一助と慣れば幸いです。
+
+末筆ながら、長い記事を読んでいただきありがとうございました。
+

@@ -1,0 +1,162 @@
+![TopPage](/images/grpc/logo.png)
+[出典: https://cncf-branding.netlify.app/projects/grpc/]
+
+本記事は2021年度の「株式会社カケハシ x TypeScript」アドベントカレンダーの16日目の記事として執筆いたしました。
+
+## 概要
+
+`gRPC`は私も以前から興味はあり、なんとなくGeek達が集まって`GO言語`でハイパフォーマンスなバックエンドを作るあれでしょ！くらいに思っていました。しかし、最近では`Node.js（TypeScript)`を利用した開発環境も徐々に充実してきていることを知ったのがきっかけで、この本記事を書きました。
+
+`gRPC`に関しては既に多くの記事がありますが、まだまだ集約した情報が少ないのと、バックエンドエンジニア目線の記事が多いということもあり、今回はフロントエンドエンジニアの目線で、さらに使い慣れた `Node.js + TypeScript` で入門していきたいと思います！
+
+ちなみに内容が少し長くなったので、記事を分割しておりますが、
+前半(本記事)では`gRPC`とは？と、実装に必要なツール群のご紹介をして、
+後半では具体的な実装の仕方をご紹介します。
+
+## `gRPC`とは
+
+### `RPC`とは
+
+`gRPC`とは何か？の前にまずは`RPC`とは何かをおさらいします。
+`RPC`は(Remote Procedure Call)で、リモートから関数を呼び出す手法です。よく`REST API`と比較されますが、`REST API`はクライアントとサーバをある意味別のアプリケーションとした上でサーバのリソースに着目してエンドポイントを整理しているのに対して、`RPC`はリモートをあたかもクライアントアプリケーションの一部として利用できる様に関数を実行します。このため、`REST API`と比較して`RPC`エンドポイントは仕様が柔軟で理解しやすい物になります。
+ちなみに、`OpenAPI`を利用して開発した場合でも、`REST API`になることは稀で、基本的には多くの開発者はJSONを利用した`RPC`を定義しています。
+この辺りは [Googleのポスト](https://cloud.google.com/blog/ja/products/api-management/understanding-grpc-openapi-and-rest-and-when-to-use-them) を参考にさせて頂きましたので、詳しくはご参照ください。
+
+pros/consで比較すると、`REST API`の定義はリソースで厳格に整理されるためエンドポイントの仕様がある程度予測できます。一方、RPCの場合はクライアントがエンドポイントの仕様を知らないと利用することができません。そのため、RPCを利用する時は`OpenAPI`や`Protocol Buffers`などなんらかのスキーマ言語やドキュメンテーション方法があると便利です。
+
+### `gRPC`とは
+
+本題に戻りますが、`gRPC`は独自の`RPC`プロトコルでAPIエンドポイントを作成するためのフレームワークです。頭にgがつくだけあって `gRPC = GO言語` 見たいなイメージがありましたが、各種言語に対応しています。もともとはGoogleで開発され、現在はCloud Native Computing Foundationに寄贈されています。
+
+`gRPC`も`HTTP`で通信しますが、`HTTP(2)`上でさらに独自の`gRPC`通信を行うことで、高パフォーマンスなAPIが作成できるとされています。そのため、`gRPC`ライブラリによって`HTTP`の詳細は隠蔽されます。
+
+また、`Protocol Buffers`を利用してスキーマ定義やpayloadのシリアライズを行っており、**gRPCの最大メリット=`Protocol Buffers`のメリット**としている記事もよく見かけます。`Protocol Buffers`に関して次節で説明します。
+
+純粋に`gRPC`と`JSON`を利用した普通のRPCエンドポイントを比較すると以下の特徴があります。
+
+**■ pros(特徴)**
+1. `HTTP2`で通信する
+  - ie) バイナリ送信、同時接続、多重通信
+  - ハイパフォーマンスが期待できる
+2. 多様なストレーミング形式に対応している
+  - 双方向ストリーミングにも対応
+- チャットルームの実装など
+
+**■ cons**
+1. WEBブラウザからは使いにくい ( [Webで利用する際の注意](#Webで利用する際の注意) を参照 )
+2. サーバ、クライアントがどちらもHTTP2に対応している必要がある
+3. サーバ、クライアントがどちらもgRPCフレームワークが必要
+  - 言語間の実装格差があったりする
+4. バイナリで通信するので人間に見えにくい
+5. 学習コスト、実装コストが高い
+  - 小規模であれば、`JSON RPC`の方が実装コストとパフォーマンスの費用対効果が高い場合がある
+
+3に関しては、`JSON RPC`は`HTTP`の知識だけでリクエストを送信できるので、`OpenAPI`でスペックから自動生成したクライアントを利用していてもサーバ側は自前で実装するというということが可能ですが、`gRPC`は必ず`gRPC`フレームワークを利用してサーバ・クライアントのコードを実装する必要があります。
+
+### Protocol Buffersとは
+
+`OpenAPI`などと同様にインターフェース定義言語（`IDL`）の一種でAPIの仕様を定義するための仕様です。また、定義した構造体のための優秀なシリアライズ方式が仕様化されており、高速かつ低容量なバイナリに変換できます。
+
+**■ インターフェース定義言語（`IDL`）であること自体の利点**
+
+- サーバ・クライアントの実装言語に関わらずAPIの仕様を定義できる
+- 周辺ツールを利用して、定義からサーバやクライアントコードを生成し利用することができる
+- 作成したモデルを利用して、サーバ・クライアント間で型安全性を保った開発ができる
+
+**■ `Protocol Buffers`の利点**
+
+- `OpenAPI`より記述が簡素で、人間に対する可読性が高い
+- 優秀なシリアライズ方式が利用できる
+
+個人的には`OpenAPI`でも code first な開発方式を取ればスペックの可読性を気にする必要は無いと思いますが([別途記事にまとめました](https://qiita.com/hedrall/items/ecc2010d8bc458a7b95e) )、spec first な開発を好む場合は`OpenAPI`の巨大化するスペックは（yamlが使えるにしろ）非常に読みにくいため、オブジェクト思考のクラスっぽく簡潔に記述できる`Protocol Buffers`の利点が生かされると思います。
+
+**gRPCは`Protocol Buffers`の定義から、サーバ・クライアントの雛形を自動生成し、実際の処理を穴埋めしていくという開発スタイルになります。**
+
+## gRPCの勘所
+
+`gRPC`のキャッチアップをしてみて一番難しいと感じる点はツールの多さです。非公式をふk目多くのツールを導入しながら `Node.js + TypeScript` での開発環境を整えていく必要があります。以下、それぞれのツールの役割が明確になる様に務めて、解説していきたいと思います。
+
+## gRPC + Node.js(TypeScript) のエコシステム
+
+### 全言語共通の物
+
+**protoc ([protocolbuffers/protobuf](https://github.com/protocolbuffers/protobuf))**
+
+`Protocol Buffers`で定義した内容を各プログラム言語のモデル(クラスなど)にコンパイルするためのCLIコマンドです。これにプラグインを追加することで`gRPC`用のコードも生成していく流れになります。[brewで簡単にinstall可能](https://google.github.io/proto-lens/installing-protoc.html#mac-os-x) ですが、`protoc` は 後述する `grpc-tools` という`npm`パッケージにも同梱されていますので、フロントエンドエンジニアはこっちの方が楽だと思います。
+
+### Protocol Buffers系
+
+**[google-protobuf](https://github.com/protocolbuffers/protobuf/tree/master/js)**
+
+`Protocol Buffers`を記述する際には `Timestamp` などのよく利用するモデルが Googleに事前定義されてライブラリとして提供されておりますが、`JavaScript` から同様のモデルをランタイムで利用するためのライブラリになります。
+
+### gRPCの公式protoc用プラグイン
+
+**[grpc/grpc-node](https://github.com/grpc/grpc-node)**
+
+`Node.js` で`gRPC` を実装する時に利用する公式ツール群がまとめられているレポジトリです。Githubでは `grpc/` 配下に `grpc/grpc-go` , `grpc/grpc-web` , `grpc/grpc-java` など各言語のgRPCライブラリが並列していますが、そのうちの`Node.js` 版です。
+`grpc/grpc-node` はモノレポ構造となっており、下記の通りいくつかの`npm`パッケージを内包しています。
+
+**`grpc-tools`**
+
+`npm`版の`protoc`(CLIコマンド)と `protoc`用の `grpc-node` プラグインが格納されています。`grpc-tools`を npm install すると、`protoc` に相当するバイナリファイルが `node_modules/.bin/grpc_tools_node_protoc` にインストールされます。`grpc-node` プラグインは gRPCのクライアントとサーバスタブ(サーバの雛形)を`protoc`から吐き出せる様にします。`TypeScript`対応はしていないので、型定義ファイルを生成するには別のプラグインが必要になります。
+
+**`grpc`**
+
+2021年に `deprecated` しますが、もともと`Node.js`で開発する場合の`gRPC`ライブラリはこれだった様です。`C言語`ベースで開発されています。
+
+**`@grpc/grpc-js`**
+
+現行の`gRPC`ライブラリです。100% `JavaScript` で`gRPC`が実装されております。`grpc-tools` で生成したコードが参照する事になります。
+
+**`@grpc/proto-loader`**
+
+ランタイムで動的に`Protocol Buffers`の定義を読み込んでサーバ・クライアントを起動するライブラリもあります。事前に`protoc`でコンパイルする必要がないのは利点ですが、その分`TypeScript`の型の恩恵を受ける事ができないので今回は省略します。
+
+**[grpc/grpc-web](https://github.com/grpc/grpc-web)**
+
+詳細は後述しますが、`gRPC`をブラウザで利用する際には考慮点があるのですが、一つの解決方法が `grpc/grpc-web` を利用してクライアントを生成する方法です。まだexperimentalですが、`TypeScript`がサポートされています。
+
+### gRPC外部系
+
+**[agreatfool/grpc_tools_node_protoc_ts](https://github.com/agreatfool/grpc_tools_node_protoc_ts)**
+**[improbable-eng/ts-protoc-gen](https://github.com/improbable-eng/ts-protoc-gen)**
+
+両方とも、`ptoroc`の`JavaScript`出力に対して型つけをする型定義ファイル (`*.d.js`) を生成するためのプラグインです。個人的には`improbable-eng/ts-protoc-gen` の方が使いやすいかな？と感じました。
+また、`improbable-eng/ts-protoc-gen`は`improbable-eng/grpc-web`を利用したWEBクライアントを生成する事も可能ですが、公式の`grpc/grpc-web`ではない点は注意が必要です。双方の差分は [公式ドキュメント](https://grpc.io/blog/state-of-grpc-web/#feature-sets) や、[issue(ちょっと古い)](https://github.com/improbable-eng/grpc-web/issues/199) に記載がありました。
+
+
+**--------------**
+
+以上たくさんあって、覚えるのが大変ですが後半では上記のライブラリを活用した実装方法を紹介していきます。
+
+## Webで利用する際の注意
+
+`gRPC`はもともとバックエンドで利用することが想定されており、ブラウザの制約でブラウザから直接`gRPC`リクエストを送ることができません。フロントエンド開発者であれば、ブラウザでの利用を最初に思い浮かべると思いますので、`gRPC`の注意するべき点です。
+
+では、ブラウザアプリから`gRPC`へリクエストが不可能なのかというと、二つの一般的な対応方法があります。
+
+**方法1 サーバ・ブラウザ間はREST APIにする**
+
+単純にブラウザからサーバへのリクエストで`gRPC`を使うのを諦めて`REST API`としてサーバにアクセスし、さらにバックエンドのサーバに通信する時は`gRPC`を利用して通信する方法です。
+
+![method1](https://user-images.githubusercontent.com/20538481/145490466-331417bf-62ea-4250-85ad-cd1a74a9e19e.png)
+
+[grpc-gateway](https://github.com/grpc-ecosystem/grpc-gateway) を利用すると、上記のサーバ1の部分を自動で生成できる様です。
+
+> ここでの `REST API` HTTPで通信する一般的なAPIであることを意図しています。
+
+**方法2 `grpc-web` を利用する**
+
+2018年に `grpc-web` というツールの[リリースが発表](https://www.publickey1.jp/blog/18/grpc-webwebgrpc.html) されました。
+動作の仕組みは `gRPC` のリクエストを`XHR`や`fetch`にマッピングして送信する物です。そのため、クライアント・サーバ間には `XHR -> gRPC` に通信を逆変換するプロキシが必要になります。
+
+![method2](https://user-images.githubusercontent.com/20538481/145490470-bcc1f1bd-8946-47cb-9ccc-a36ead14dfd4.png)
+
+現在 `grpc-web` というツールは[公式(grpc/grpc-web)](https://github.com/grpc/grpc-web) と[improbable社製(improbable-eng/grpc-web)](https://github.com/improbable-eng/grpc-web) があります。双方で利用するproxyが異なり、公式はenvoy, improbableは独自の`GO言語`ベースのプロキシになります。また、実装状況によっては、双方向ストリーム機能など一部機能に制限があったりします。純正の方の[Roadmap](https://github.com/grpc/grpc-web/blob/master/doc/roadmap.md) を見ると、まだまだ途上だなぁと感じます。 それぞれの対応状況の外観や、`gRPC`のブラウザ対応状況は[こちら](https://grpc.io/blog/state-of-grpc-web/) に記載があります。
+
+## まとめ
+
+前半では`gRPC`そのものを振り返りました。各種ツールの関係やブラウザの対応状況などは一度整理ができてよかったと思います。
+細かい機能では`server interceptor`が`Node.js`環境で利用できなかったり、やっぱりGO言語のサーバの方が機能が充実しているような印象がありますが、JS界隈のツールも徐々に充実してきております。
+次回は具体的なコードで `Node + gRPC` での実装方法をご紹介していきたいと思います。
