@@ -13,6 +13,7 @@ type _Meta = {
 };
 
 const _PostFileName = [
+  '2023-08-18-ts-module-and-namespace.mdx',
   '20221120-dependency-cruiser.mdx',
   '20221120-glob.mdx',
   '20221203-jet-brain.mdx',
@@ -41,6 +42,14 @@ const _PostFileName = [
 type _PostFileName = (typeof _PostFileName)[number];
 
 const _Meta: { [K in _PostFileName]: _Meta & { slug: _PostFileName extends `${infer N}.mdx` ? N : string } } = {
+  '2023-08-18-ts-module-and-namespace.mdx': {
+    slug: '2023-08-18-ts-module-and-namespace',
+    title: 'TypeScriptで型と値を一体化し、モジュールを形成する重要性と手法',
+    date: '2023-08-18',
+    author: 'hedrall',
+    image: '/images/typescript/logo.png',
+    tags: ['typescript'],
+  },
   'ts-null-coding.mdx': {
     slug: 'ts-null-coding',
     title: 'TypeScriptのコーディングでnullとundefinedを使い分けるべきか',
@@ -228,6 +237,7 @@ const _Meta: { [K in _PostFileName]: _Meta & { slug: _PostFileName extends `${in
 };
 
 const _PostComponents = {
+  '2023-08-18-ts-module-and-namespace.mdx': dynamic(() => import('./2023-08-18-ts-module-and-namespace.mdx')),
   'ts-null-coding.mdx': dynamic(() => import('./ts-null-coding.mdx')),
   'doc-creation.mdx': dynamic(() => import('./doc-creation.mdx')),
   '20221120-dependency-cruiser.mdx': DependencyCruiser,
