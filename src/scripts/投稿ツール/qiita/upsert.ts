@@ -5,6 +5,7 @@ import { _Meta } from '../../../posts/meta/meta';
 import fs from 'fs';
 import path from 'path';
 import { QiitaRegistry } from './registry/投稿済み管理';
+import { loadBody } from '../common';
 
 const token = process.env.QIITA_TOKEN;
 assert(token, '環境変数 QIITA_TOKEN が設定されていません。');
@@ -15,23 +16,11 @@ export const _upsert = async (_filename: string) => {
 
   // 記事の情報を準備する
   const meta = _Meta[`${id}.mdx`];
-  const body = fs.readFileSync(path.resolve(__dirname, `../../../posts/${id}.mdx`)).toString();
-  console.log({
-    meta,
-    body: body.slice(0, 40),
-  });
-
-  // 本文に引用を追加する
-  const modBody = `
-  [自ブログ](https://blog.hedrall.work/posts/${id})からの引用です。
-  
-  ${body}
-  `;
 
   // APIのリクエストぱらむ
   const postParams: Qiita.PostParams = {
     title: meta.title,
-    body: modBody,
+    body: loadBody(id),
     tags: meta.tags.map((t) => ({ name: t })),
   };
 

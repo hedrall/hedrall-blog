@@ -130,6 +130,9 @@ devDependencies:
   yaml-loader:
     specifier: ^0.8.0
     version: 0.8.0
+  zenn-cli:
+    specifier: ^0.1.144
+    version: 0.1.144
 
 packages:
 
@@ -6117,6 +6120,12 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: false
+
+  /zenn-cli@0.1.144:
+    resolution: {integrity: sha512-vReeYJg2ySjIUKSm5shKdi8rLmMO31Mtk7/xcTJVMSY0sLWJemTgtV8Mcpe1lIvTLKwg5SjfAa3iWjX0HIy3EA==}
+    engines: {node: '>=14.0.0'}
+    hasBin: true
+    dev: true
 
   /zod@3.21.4:
     resolution: {integrity: sha512-m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw==}
