@@ -4,6 +4,8 @@ import { _Meta as Meta } from '../../../posts/meta/meta';
 import { loadBody } from '../common';
 import fs from 'fs';
 import path from 'path';
+import { ZennPosted } from './posted';
+import { FileId } from '../../../posts/meta/filenames';
 
 type ZennMeta = {
   title: string;
@@ -12,24 +14,25 @@ type ZennMeta = {
   topics: string[];
   published: boolean;
 };
-const main = async () => {
+const build = async (fileId: FileId) => {
   /* do */
-  const id = '2023-08-18-ts-module-and-namespace';
   const res = child_process.execSync('npx zenn list:articles').toString();
-  const articles = res.split('\n').filter(Boolean);
 
-  const isExist = articles.includes(id);
+  // Meta情報
+  const meta = Meta[`${fileId}.mdx`];
 
-  const extSetting = ExternalSiteSettings[`${id}.mdx`];
-  if (!extSetting) throw new Error('extSetting is not found');
-  const { emoji } = extSetting;
-  const { title, tags } = Meta[`${id}.mdx`];
-  const zennMeta = {
-    title,
-    emoji,
+  // 過去に投稿済みのデータ
+  const posted = ZennPosted.get(fileId);
+
+  // 23/08/22以降 Gitで投稿を管理しているデータ
+  const extSetting = ExternalSiteSettings[fileId];
+
+  const zennMeta: ZennMeta = {
+    title: meta.title,
+    emoji: extSetting?.emoji || posted.emoji,
     type: 'tech',
-    topics: tags,
-    publish: true,
+    topics: meta.tags,
+    published: true,
   };
 
   const article = `---
@@ -37,15 +40,21 @@ title: "${zennMeta.title}"
 emoji: "${zennMeta.emoji}"
 type: "${zennMeta.type}"
 topics: [${zennMeta.topics.map((t) => `"${t}"`).join(', ')}]
-published: ${zennMeta.publish}
+published: ${zennMeta.published}
 ---
 
-${loadBody(id)}
+${loadBody(fileId)}
 `;
 
-  fs.writeFileSync(path.resolve(__dirname, `../../../../articles/${id}.md`), article);
+  const zennArticleFileName = posted?.slug || fileId;
+
+  fs.writeFileSync(path.resolve(__dirname, `../../../../articles/${zennArticleFileName}.md`), article);
 };
 
 (async () => {
-  await main();
+  const fileIds = [...Object.values(ZennPosted.items).map((i) => i.fileId), ...Object.keys(ExternalSiteSettings)] as FileId[];
+  for (const id of fileIds) {
+    console.log(`>>> id: ${id}`);
+    await build(id);
+  }
 })().catch(console.error);

@@ -25,3 +25,4 @@ export const _PostFileName = [
   'ts-null-coding.mdx',
 ] as const;
 export type _PostFileName = (typeof _PostFileName)[number];
+export type FileId = _PostFileName extends `${infer ID}.mdx` ? ID : never;

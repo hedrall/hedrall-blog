@@ -2,8 +2,6 @@ import axios from 'axios';
 import assert from 'assert';
 import { Qiita } from './type';
 import { _Meta } from '../../../posts/meta/meta';
-import fs from 'fs';
-import path from 'path';
 import { QiitaRegistry } from './registry/投稿済み管理';
 import { loadBody } from '../common';
 
