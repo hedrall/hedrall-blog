@@ -4,14 +4,12 @@ import { Qiita } from './type';
 import { _Meta } from '../../../posts/meta/meta';
 import { QiitaRegistry } from './registry/投稿済み管理';
 import { loadBody } from '../common';
+import { FileId } from '../../../posts/meta/filenames';
 
 const token = process.env.QIITA_TOKEN;
 assert(token, '環境変数 QIITA_TOKEN が設定されていません。');
 
-export const _upsert = async (_filename: string) => {
-  // _filename = '2023-08-18-ts-module-and-namespace.mdx';
-  const id = _filename.replace('.mdx', '');
-
+export const _upsert = async (id: FileId) => {
   // 記事の情報を準備する
   const meta = _Meta[`${id}.mdx`];
 
@@ -45,7 +43,7 @@ export const _upsert = async (_filename: string) => {
     },
   });
 
-  console.log(res.data);
+  console.log('>>> OK !!!');
 
   // QiitaのItemIDを保存する
   QiitaRegistry.upsertPostedItem(res.data.id, id);
