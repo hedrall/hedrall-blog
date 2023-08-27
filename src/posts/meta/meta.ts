@@ -93,7 +93,7 @@ export const _Meta: { [K in _PostFileName]: _Meta & { slug: _PostFileName extend
   },
   'esbuild-2021-02-14.mdx': {
     slug: 'esbuild-2021-02-14',
-    title: 'さっくりとesbuildを調査してみた',
+    title: '話題のesbuildをさっくりと調査してみた',
     date: '2021-02-14',
     author: 'hedrall',
     image: '/images/esbuild/logo.png',

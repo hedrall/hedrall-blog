@@ -1,0 +1,1442 @@
+[
+  {
+    "coediting": false,
+    "comments_count": 1,
+    "created_at": "2023-08-22T08:04:19+09:00",
+    "group": null,
+    "id": "61a322b8fc7b98208274",
+    "likes_count": 1,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 0,
+    "tags": [
+      {
+        "name": "TypeScript",
+        "versions": []
+      }
+    ],
+    "title": "TypeScriptで型と値を一体化し、モジュールを形成する重要性と手法",
+    "updated_at": "2023-08-22T09:51:18+09:00",
+    "url": "https://qiita.com/hedrall/items/61a322b8fc7b98208274",
+    "page_views_count": 270,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2023-07-20T08:36:52+09:00",
+    "group": null,
+    "id": "e9db422a8accaee661db",
+    "likes_count": 0,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 0,
+    "tags": [
+      {
+        "name": "TypeScript",
+        "versions": []
+      }
+    ],
+    "title": "TypeScriptのコーディングでnullとundefinedを使い分けるべきか？",
+    "updated_at": "2023-08-22T09:52:18+09:00",
+    "url": "https://qiita.com/hedrall/items/e9db422a8accaee661db",
+    "page_views_count": 248,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2023-06-30T08:33:31+09:00",
+    "group": null,
+    "id": "e834f4628fc4ff7de1fe",
+    "likes_count": 1,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 0,
+    "tags": [
+      {
+        "name": "ポエム",
+        "versions": []
+      },
+      {
+        "name": "資料作成",
+        "versions": []
+      }
+    ],
+    "title": "エンジニアが考える、情報対象性の高い資料作成に重要なこと",
+    "updated_at": "2023-06-30T08:33:31+09:00",
+    "url": "https://qiita.com/hedrall/items/e834f4628fc4ff7de1fe",
+    "page_views_count": 653,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2023-06-13T07:24:21+09:00",
+    "group": null,
+    "id": "63795639720bff06d7d1",
+    "likes_count": 1,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 2,
+    "tags": [
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "SPA",
+        "versions": []
+      },
+      {
+        "name": "フロントエンド",
+        "versions": []
+      },
+      {
+        "name": "Qwik",
+        "versions": []
+      }
+    ],
+    "title": "qwikをざっくり調べてみた",
+    "updated_at": "2023-06-13T07:47:32+09:00",
+    "url": "https://qiita.com/hedrall/items/63795639720bff06d7d1",
+    "page_views_count": 423,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 15,
+    "created_at": "2023-03-13T08:36:33+09:00",
+    "group": null,
+    "id": "d90be1e090303de65058",
+    "likes_count": 29,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 7,
+    "tags": [
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "ドメイン駆動設計",
+        "versions": []
+      },
+      {
+        "name": "日本語プログラミング",
+        "versions": []
+      }
+    ],
+    "title": "Webエンジニアはそろそろ日本語変数名の利用を検討してもいいのでは？",
+    "updated_at": "2023-06-14T06:50:26+09:00",
+    "url": "https://qiita.com/hedrall/items/d90be1e090303de65058",
+    "page_views_count": 3701,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2022-11-30T07:19:17+09:00",
+    "group": null,
+    "id": "e5507dbec5429c69616f",
+    "likes_count": 15,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 8,
+    "tags": [
+      {
+        "name": "テスト",
+        "versions": []
+      },
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "dependency",
+        "versions": []
+      },
+      {
+        "name": "Linter",
+        "versions": []
+      },
+      {
+        "name": "CodeMetrics",
+        "versions": []
+      }
+    ],
+    "title": "ESLintだけでは守れない。Dependency cruiserによるアーキテクチャー保護",
+    "updated_at": "2022-11-30T07:21:13+09:00",
+    "url": "https://qiita.com/hedrall/items/e5507dbec5429c69616f",
+    "page_views_count": 2462,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2022-11-29T08:18:35+09:00",
+    "group": null,
+    "id": "8777ad751dd8ee157d98",
+    "likes_count": 0,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 0,
+    "tags": [
+      {
+        "name": "Node.js",
+        "versions": []
+      },
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "glob",
+        "versions": []
+      }
+    ],
+    "title": "[TIPS]: Node.jsでglobパターンを、RegExpに変換するBetterな法方",
+    "updated_at": "2022-11-29T08:20:48+09:00",
+    "url": "https://qiita.com/hedrall/items/8777ad751dd8ee157d98",
+    "page_views_count": 479,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 2,
+    "created_at": "2022-07-25T08:01:10+09:00",
+    "group": null,
+    "id": "fe9f12f24e79f46edf56",
+    "likes_count": 24,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 16,
+    "tags": [
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "ドメイン駆動設計",
+        "versions": []
+      }
+    ],
+    "title": "ドメイン駆動設計: TypeScriptでの値オブジェクトの書き方",
+    "updated_at": "2022-11-29T08:12:22+09:00",
+    "url": "https://qiita.com/hedrall/items/fe9f12f24e79f46edf56",
+    "page_views_count": 3002,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2022-07-03T17:00:13+09:00",
+    "group": null,
+    "id": "91bf077b40dc7cfe05ed",
+    "likes_count": 2,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 0,
+    "tags": [
+      {
+        "name": "Node.js",
+        "versions": []
+      },
+      {
+        "name": "テスト",
+        "versions": []
+      },
+      {
+        "name": "pact",
+        "versions": []
+      }
+    ],
+    "title": "マイクロサービス間の整合性を守る、消費者駆動契約テストをNode.jsで試してみる",
+    "updated_at": "2022-07-03T17:00:13+09:00",
+    "url": "https://qiita.com/hedrall/items/91bf077b40dc7cfe05ed",
+    "page_views_count": 1315,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2022-05-16T07:02:31+09:00",
+    "group": null,
+    "id": "f8c843c32483ff74f918",
+    "likes_count": 2,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 1,
+    "tags": [
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "フロントエンド",
+        "versions": []
+      },
+      {
+        "name": "reg-suit",
+        "versions": []
+      }
+    ],
+    "title": "Storybook不要! Visual Regression テスト環境の構築方法を分かりやすく解説",
+    "updated_at": "2022-05-20T09:27:44+09:00",
+    "url": "https://qiita.com/hedrall/items/f8c843c32483ff74f918",
+    "page_views_count": 1620,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2022-03-04T07:44:43+09:00",
+    "group": null,
+    "id": "db1f1de9196fc7d36f3d",
+    "likes_count": 13,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 7,
+    "tags": [
+      {
+        "name": "Node.js",
+        "versions": []
+      },
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "Jest",
+        "versions": []
+      },
+      {
+        "name": "uvu",
+        "versions": []
+      }
+    ],
+    "title": "既存のJestで書かれたテストを爆速実行するツール、uvu-jest を作りました",
+    "updated_at": "2022-03-04T07:44:43+09:00",
+    "url": "https://qiita.com/hedrall/items/db1f1de9196fc7d36f3d",
+    "page_views_count": 2548,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2021-12-21T07:02:52+09:00",
+    "group": null,
+    "id": "9f4c03c3a6518504473a",
+    "likes_count": 18,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 8,
+    "tags": [
+      {
+        "name": "API",
+        "versions": []
+      },
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "gRPC",
+        "versions": []
+      }
+    ],
+    "title": "Node.js + TypeScript で gRPCに入門する [後編: 実装編]",
+    "updated_at": "2021-12-21T09:59:48+09:00",
+    "url": "https://qiita.com/hedrall/items/9f4c03c3a6518504473a",
+    "page_views_count": 7425,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2021-12-16T07:52:51+09:00",
+    "group": null,
+    "id": "038a2b29d27dd631be8a",
+    "likes_count": 11,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 7,
+    "tags": [
+      {
+        "name": "Node.js",
+        "versions": []
+      },
+      {
+        "name": "API",
+        "versions": []
+      },
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "gRPC",
+        "versions": []
+      }
+    ],
+    "title": "Node.js + TypeScript で gRPCに入門する [前編: gRPCとは]",
+    "updated_at": "2021-12-16T12:03:10+09:00",
+    "url": "https://qiita.com/hedrall/items/038a2b29d27dd631be8a",
+    "page_views_count": 3078,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2021-12-07T10:28:17+09:00",
+    "group": null,
+    "id": "f5cbb83964dc17ee677b",
+    "likes_count": 1,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 0,
+    "tags": [
+      {
+        "name": "TypeScript",
+        "versions": []
+      }
+    ],
+    "title": "TypeScriptのライブラリ内で参照されているライブラリを差し替えるちょっとしたTIPS",
+    "updated_at": "2021-12-16T08:00:45+09:00",
+    "url": "https://qiita.com/hedrall/items/f5cbb83964dc17ee677b",
+    "page_views_count": 1030,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2021-12-07T10:24:12+09:00",
+    "group": null,
+    "id": "ecc2010d8bc458a7b95e",
+    "likes_count": 6,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 1,
+    "tags": [
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "OpenAPI",
+        "versions": []
+      },
+      {
+        "name": "tsoa",
+        "versions": []
+      },
+      {
+        "name": "OpenAPI-Generator",
+        "versions": []
+      }
+    ],
+    "title": "Code Firstで疲弊しないOpenAPI活用方法",
+    "updated_at": "2021-12-26T17:39:04+09:00",
+    "url": "https://qiita.com/hedrall/items/ecc2010d8bc458a7b95e",
+    "page_views_count": 1786,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 1,
+    "created_at": "2021-12-02T23:11:01+09:00",
+    "group": null,
+    "id": "43b6d705ab8dc78e6321",
+    "likes_count": 30,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 16,
+    "tags": [
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "React",
+        "versions": []
+      },
+      {
+        "name": "esbuild",
+        "versions": []
+      }
+    ],
+    "title": "esbuild + React(TS) で実現する超軽量な開発環境 ",
+    "updated_at": "2022-02-22T07:26:52+09:00",
+    "url": "https://qiita.com/hedrall/items/43b6d705ab8dc78e6321",
+    "page_views_count": 6118,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2021-11-11T07:05:51+09:00",
+    "group": null,
+    "id": "f2ebb5338f79007083a3",
+    "likes_count": 9,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 6,
+    "tags": [
+      {
+        "name": "ShadowDOM",
+        "versions": []
+      },
+      {
+        "name": "WebComponents",
+        "versions": []
+      }
+    ],
+    "title": "WebComponentsとは何だったのか？基礎から再入門する",
+    "updated_at": "2021-12-26T17:05:47+09:00",
+    "url": "https://qiita.com/hedrall/items/f2ebb5338f79007083a3",
+    "page_views_count": 3449,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2021-09-15T07:56:14+09:00",
+    "group": null,
+    "id": "47401d70848d23d6aad6",
+    "likes_count": 6,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 1,
+    "tags": [
+      {
+        "name": "テスト",
+        "versions": []
+      },
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "Jest",
+        "versions": []
+      }
+    ],
+    "title": "Jestを効率的に実行するためのTips",
+    "updated_at": "2021-12-25T15:21:27+09:00",
+    "url": "https://qiita.com/hedrall/items/47401d70848d23d6aad6",
+    "page_views_count": 2381,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2021-06-28T06:48:36+09:00",
+    "group": null,
+    "id": "26f5b021dc3ab01672dd",
+    "likes_count": 3,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 1,
+    "tags": [
+      {
+        "name": "AWS",
+        "versions": []
+      },
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "CDK",
+        "versions": []
+      }
+    ],
+    "title": "AWS CDK v2 RCが出たので変更点をまとめます！",
+    "updated_at": "2021-06-28T06:48:36+09:00",
+    "url": "https://qiita.com/hedrall/items/26f5b021dc3ab01672dd",
+    "page_views_count": 1885,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2021-06-07T07:19:12+09:00",
+    "group": null,
+    "id": "768df693f277ae464583",
+    "likes_count": 0,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 0,
+    "tags": [
+      {
+        "name": "Git",
+        "versions": []
+      }
+    ],
+    "title": "terminalでGitの認証情報を更新する",
+    "updated_at": "2021-06-07T07:19:12+09:00",
+    "url": "https://qiita.com/hedrall/items/768df693f277ae464583",
+    "page_views_count": 3585,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2021-05-19T13:33:35+09:00",
+    "group": null,
+    "id": "477417e7b919c00f9a95",
+    "likes_count": 2,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 0,
+    "tags": [
+      {
+        "name": "TypeScript",
+        "versions": []
+      }
+    ],
+    "title": "TypeScript 3.7 ~ 4.2 までの主な変更をまとめて復習する",
+    "updated_at": "2021-12-25T16:54:24+09:00",
+    "url": "https://qiita.com/hedrall/items/477417e7b919c00f9a95",
+    "page_views_count": 1088,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2021-04-08T14:41:40+09:00",
+    "group": null,
+    "id": "a591b9c29a7190484c33",
+    "likes_count": 0,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 0,
+    "tags": [
+      {
+        "name": "Node.js",
+        "versions": []
+      },
+      {
+        "name": "npm",
+        "versions": []
+      }
+    ],
+    "title": "重い腰を上げて、NPMの取りこぼしを回収する",
+    "updated_at": "2021-04-08T15:09:43+09:00",
+    "url": "https://qiita.com/hedrall/items/a591b9c29a7190484c33",
+    "page_views_count": 1032,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2021-03-07T14:21:15+09:00",
+    "group": null,
+    "id": "f2239f98f1c0fdd14b07",
+    "likes_count": 1,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 1,
+    "tags": [
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "Vue.js",
+        "versions": []
+      },
+      {
+        "name": "vite",
+        "versions": []
+      }
+    ],
+    "title": "[Vueの開発体験を爆上げする] Viteを調査",
+    "updated_at": "2021-03-07T14:43:26+09:00",
+    "url": "https://qiita.com/hedrall/items/f2239f98f1c0fdd14b07",
+    "page_views_count": 3054,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2021-03-03T10:33:08+09:00",
+    "group": null,
+    "id": "61e1809b8acb297193d8",
+    "likes_count": 1,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 0,
+    "tags": [
+      {
+        "name": "Jest",
+        "versions": []
+      }
+    ],
+    "title": "Jestでスナップショットのパスを変更する",
+    "updated_at": "2021-09-15T07:47:00+09:00",
+    "url": "https://qiita.com/hedrall/items/61e1809b8acb297193d8",
+    "page_views_count": 551,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 2,
+    "created_at": "2021-02-28T14:55:43+09:00",
+    "group": null,
+    "id": "2548718cfdf7bef3efc0",
+    "likes_count": 84,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 40,
+    "tags": [
+      {
+        "name": "Node.js",
+        "versions": []
+      },
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "esbuild",
+        "versions": []
+      }
+    ],
+    "title": "話題のesbuildをさっくりと調査してみた",
+    "updated_at": "2022-02-17T07:31:46+09:00",
+    "url": "https://qiita.com/hedrall/items/2548718cfdf7bef3efc0",
+    "page_views_count": 16748,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 2,
+    "created_at": "2021-02-17T09:44:40+09:00",
+    "group": null,
+    "id": "177eb850c4c054146321",
+    "likes_count": 1383,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 1782,
+    "tags": [
+      {
+        "name": "Git",
+        "versions": []
+      },
+      {
+        "name": "プログラミング",
+        "versions": []
+      },
+      {
+        "name": "学習",
+        "versions": []
+      }
+    ],
+    "title": "Webエンジニアが勉強できるGit Repository 10選",
+    "updated_at": "2022-01-04T08:04:39+09:00",
+    "url": "https://qiita.com/hedrall/items/177eb850c4c054146321",
+    "page_views_count": 55863,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 1,
+    "created_at": "2021-01-18T10:13:30+09:00",
+    "group": null,
+    "id": "8cb5020c91f30be1cf36",
+    "likes_count": 4,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 1,
+    "tags": [
+      {
+        "name": "Google",
+        "versions": []
+      },
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "Firebase",
+        "versions": []
+      },
+      {
+        "name": "Nuxt",
+        "versions": []
+      }
+    ],
+    "title": "[Nuxt + Firebase + Lambda] で実現したLow CostなSSR環境 (結構辛い)",
+    "updated_at": "2021-01-28T07:06:43+09:00",
+    "url": "https://qiita.com/hedrall/items/8cb5020c91f30be1cf36",
+    "page_views_count": 1682,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2021-01-09T10:26:04+09:00",
+    "group": null,
+    "id": "0516ed057e9d79b5bff3",
+    "likes_count": 2,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 2,
+    "tags": [
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "Firebase",
+        "versions": []
+      }
+    ],
+    "title": "Firebaseでスクレイピング [axois => firebase storage]",
+    "updated_at": "2021-01-09T13:38:10+09:00",
+    "url": "https://qiita.com/hedrall/items/0516ed057e9d79b5bff3",
+    "page_views_count": 818,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2020-05-05T17:17:18+09:00",
+    "group": null,
+    "id": "4297ae0a92ce577b835f",
+    "likes_count": 11,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 9,
+    "tags": [
+      {
+        "name": "MySQL",
+        "versions": []
+      },
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "TypeORM",
+        "versions": []
+      }
+    ],
+    "title": "TypeORMを使用して、TypeScriptでMySQLのマイグレーション、接続を管理する",
+    "updated_at": "2020-05-05T17:19:38+09:00",
+    "url": "https://qiita.com/hedrall/items/4297ae0a92ce577b835f",
+    "page_views_count": 8501,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2020-04-26T02:14:06+09:00",
+    "group": null,
+    "id": "4588f244dbe32336582f",
+    "likes_count": 0,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 0,
+    "tags": [
+      {
+        "name": "Node.js",
+        "versions": []
+      },
+      {
+        "name": "GoogleAnalytics",
+        "versions": []
+      },
+      {
+        "name": "BigQuery",
+        "versions": []
+      },
+      {
+        "name": "ADManager",
+        "versions": []
+      }
+    ],
+    "title": "4種のGoogle系のAPIをNode.jsから実行する (GA, SpreadSheet, Big Query, GAM)",
+    "updated_at": "2021-03-05T11:47:06+09:00",
+    "url": "https://qiita.com/hedrall/items/4588f244dbe32336582f",
+    "page_views_count": 2337,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2019-11-16T18:17:59+09:00",
+    "group": null,
+    "id": "7bda81eae6b6dc04d5ae",
+    "likes_count": 2,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 1,
+    "tags": [
+      {
+        "name": "AWS",
+        "versions": []
+      },
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "CDK",
+        "versions": []
+      }
+    ],
+    "title": "AWS CDKまとめ、TIPS",
+    "updated_at": "2020-03-22T00:04:08+09:00",
+    "url": "https://qiita.com/hedrall/items/7bda81eae6b6dc04d5ae",
+    "page_views_count": 2255,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 1,
+    "created_at": "2019-07-21T12:31:06+09:00",
+    "group": null,
+    "id": "276512181de74bf7b4ff",
+    "likes_count": 17,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 8,
+    "tags": [
+      {
+        "name": "AWS",
+        "versions": []
+      },
+      {
+        "name": "CodeBuild",
+        "versions": []
+      }
+    ],
+    "title": "TerraformでCodeBuildプロジェクトを作成し、SPAをS3でホストした時の手順と色々検討したことまとめ",
+    "updated_at": "2020-04-21T10:25:09+09:00",
+    "url": "https://qiita.com/hedrall/items/276512181de74bf7b4ff",
+    "page_views_count": 5363,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 2,
+    "created_at": "2019-06-30T23:41:30+09:00",
+    "group": null,
+    "id": "26c62d2b5d6d3a6f3c79",
+    "likes_count": 6,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 7,
+    "tags": [
+      {
+        "name": "moment.js",
+        "versions": []
+      },
+      {
+        "name": "Vue.js",
+        "versions": []
+      },
+      {
+        "name": "webpack",
+        "versions": []
+      }
+    ],
+    "title": "[ Vue.js ] moment.jsを導入する時はバンドルサイズに気をつける (IgnorePluginを理解)",
+    "updated_at": "2021-06-03T07:39:21+09:00",
+    "url": "https://qiita.com/hedrall/items/26c62d2b5d6d3a6f3c79",
+    "page_views_count": 3214,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2019-05-22T16:59:28+09:00",
+    "group": null,
+    "id": "fd8157c2e2630b2e532f",
+    "likes_count": 16,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 13,
+    "tags": [
+      {
+        "name": "solidity",
+        "versions": []
+      }
+    ],
+    "title": "Solidity公式Exampleをやってみる (version: 0.5.8)",
+    "updated_at": "2019-12-23T12:50:44+09:00",
+    "url": "https://qiita.com/hedrall/items/fd8157c2e2630b2e532f",
+    "page_views_count": 3271,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2019-04-13T23:17:26+09:00",
+    "group": null,
+    "id": "40625faad14524aeb97c",
+    "likes_count": 3,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 2,
+    "tags": [
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "Nuxt",
+        "versions": []
+      }
+    ],
+    "title": "Nuxt(Vue) + TypeScript で vuelidateの導入でハマった件",
+    "updated_at": "2019-04-14T00:55:05+09:00",
+    "url": "https://qiita.com/hedrall/items/40625faad14524aeb97c",
+    "page_views_count": 3831,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2019-03-29T00:54:38+09:00",
+    "group": null,
+    "id": "28504fca6f367edd65de",
+    "likes_count": 150,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 152,
+    "tags": [
+      {
+        "name": "Vue.js",
+        "versions": []
+      },
+      {
+        "name": "Nuxt",
+        "versions": []
+      }
+    ],
+    "title": "[Nuxt.js入門] 全体像をざっくり掴むためのポイントまとめ",
+    "updated_at": "2021-07-15T07:31:12+09:00",
+    "url": "https://qiita.com/hedrall/items/28504fca6f367edd65de",
+    "page_views_count": 21564,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2019-01-05T17:18:10+09:00",
+    "group": null,
+    "id": "8f96584ba02734927610",
+    "likes_count": 2,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 4,
+    "tags": [
+      {
+        "name": "Node.js",
+        "versions": []
+      },
+      {
+        "name": "Express",
+        "versions": []
+      },
+      {
+        "name": "webpack",
+        "versions": []
+      }
+    ],
+    "title": "Express + Webpack の開発環境で auto reload する",
+    "updated_at": "2019-06-16T11:37:05+09:00",
+    "url": "https://qiita.com/hedrall/items/8f96584ba02734927610",
+    "page_views_count": 4318,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2018-08-07T00:00:34+09:00",
+    "group": null,
+    "id": "94ef17b2e096c9d352bd",
+    "likes_count": 11,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 10,
+    "tags": [
+      {
+        "name": "Cordova",
+        "versions": []
+      },
+      {
+        "name": "Angular",
+        "versions": []
+      },
+      {
+        "name": "ionic",
+        "versions": []
+      },
+      {
+        "name": "Ionic3",
+        "versions": []
+      }
+    ],
+    "title": "Ionic > カメラロールなどから画像を選択して、アップロードする(browser, native両方)",
+    "updated_at": "2019-03-27T10:27:26+09:00",
+    "url": "https://qiita.com/hedrall/items/94ef17b2e096c9d352bd",
+    "page_views_count": 6509,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2018-07-28T23:07:31+09:00",
+    "group": null,
+    "id": "1d60ee4c08a430fd9d53",
+    "likes_count": 3,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 4,
+    "tags": [
+      {
+        "name": "ionic",
+        "versions": []
+      }
+    ],
+    "title": "Ionic > Rating Star実装する ( 星をつけるやつ )",
+    "updated_at": "2018-09-05T09:03:07+09:00",
+    "url": "https://qiita.com/hedrall/items/1d60ee4c08a430fd9d53",
+    "page_views_count": 1004,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 3,
+    "created_at": "2018-07-18T19:16:39+09:00",
+    "group": null,
+    "id": "b5dc7ec2cd1c635aeaa2",
+    "likes_count": 81,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 78,
+    "tags": [
+      {
+        "name": "Angular",
+        "versions": []
+      },
+      {
+        "name": "Angular2",
+        "versions": []
+      },
+      {
+        "name": "Angular6",
+        "versions": []
+      }
+    ],
+    "title": "Angular > Reactive Formsの使い方が初心者にわかりにくすぎるので、例を交えて取り合えず実装できる様にまとめて見た",
+    "updated_at": "2020-01-26T22:56:51+09:00",
+    "url": "https://qiita.com/hedrall/items/b5dc7ec2cd1c635aeaa2",
+    "page_views_count": 26174,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2018-06-22T15:17:30+09:00",
+    "group": null,
+    "id": "b05eb45eb1a50b3436a9",
+    "likes_count": 12,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 8,
+    "tags": [
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "Angular",
+        "versions": []
+      }
+    ],
+    "title": "Angular > テンプレート内で、テンプレートを参照する。(ng-containerでng-templateを参照)",
+    "updated_at": "2019-03-29T16:48:17+09:00",
+    "url": "https://qiita.com/hedrall/items/b05eb45eb1a50b3436a9",
+    "page_views_count": 6683,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 3,
+    "created_at": "2018-06-15T12:59:57+09:00",
+    "group": null,
+    "id": "55774c89debdbc7104c6",
+    "likes_count": 7,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 2,
+    "tags": [
+      {
+        "name": "JavaScript",
+        "versions": []
+      },
+      {
+        "name": "Angular",
+        "versions": []
+      }
+    ],
+    "title": "ちょっとびっくりした、setTimeout, setIntervalの戻り値",
+    "updated_at": "2019-05-04T23:49:54+09:00",
+    "url": "https://qiita.com/hedrall/items/55774c89debdbc7104c6",
+    "page_views_count": 11942,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2018-06-07T19:16:13+09:00",
+    "group": null,
+    "id": "7c813b497d8b613ec1b5",
+    "likes_count": 4,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 4,
+    "tags": [
+      {
+        "name": "TypeScript",
+        "versions": []
+      },
+      {
+        "name": "Angular",
+        "versions": []
+      },
+      {
+        "name": "setter",
+        "versions": []
+      },
+      {
+        "name": "getter",
+        "versions": []
+      }
+    ],
+    "title": "[Angular] 自作したカスタムコンポーネントのフォームに双方向データバインドする",
+    "updated_at": "2018-06-07T19:16:13+09:00",
+    "url": "https://qiita.com/hedrall/items/7c813b497d8b613ec1b5",
+    "page_views_count": 2451,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 3,
+    "created_at": "2018-02-20T20:08:47+09:00",
+    "group": null,
+    "id": "55b972738ba7dbc6ac4e",
+    "likes_count": 4,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 3,
+    "tags": [
+      {
+        "name": "Angular",
+        "versions": []
+      }
+    ],
+    "title": "Angularで操作された要素と別の要素のclickイベントを発火させる。",
+    "updated_at": "2018-02-21T18:13:31+09:00",
+    "url": "https://qiita.com/hedrall/items/55b972738ba7dbc6ac4e",
+    "page_views_count": 4585,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 8,
+    "created_at": "2018-02-13T00:28:51+09:00",
+    "group": null,
+    "id": "fa8d43292f6bbeaf96d7",
+    "likes_count": 34,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 34,
+    "tags": [
+      {
+        "name": "Angular",
+        "versions": []
+      },
+      {
+        "name": "Bitcoin",
+        "versions": []
+      },
+      {
+        "name": "仮想通貨",
+        "versions": []
+      },
+      {
+        "name": "NEM",
+        "versions": []
+      },
+      {
+        "name": "アービトラージ",
+        "versions": []
+      }
+    ],
+    "title": "Angularで可視化しながら、３通貨アービトーラージ（内部アービトラージ）の自動化実験をしてみた",
+    "updated_at": "2019-05-27T15:42:54+09:00",
+    "url": "https://qiita.com/hedrall/items/fa8d43292f6bbeaf96d7",
+    "page_views_count": 10187,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 1,
+    "created_at": "2017-09-28T20:55:22+09:00",
+    "group": null,
+    "id": "4c95f6289031bb6946ab",
+    "likes_count": 6,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 1,
+    "tags": [
+      {
+        "name": "error",
+        "versions": []
+      },
+      {
+        "name": "バグ",
+        "versions": []
+      },
+      {
+        "name": "Angular",
+        "versions": []
+      },
+      {
+        "name": "Angular2",
+        "versions": []
+      }
+    ],
+    "title": "Angular4 : Failed to execute 'setAttribute' on 'Element",
+    "updated_at": "2017-09-28T20:55:22+09:00",
+    "url": "https://qiita.com/hedrall/items/4c95f6289031bb6946ab",
+    "page_views_count": 8191,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  },
+  {
+    "coediting": false,
+    "comments_count": 0,
+    "created_at": "2017-08-10T13:40:21+09:00",
+    "group": null,
+    "id": "c2a179d6ecb898a4a8b1",
+    "likes_count": 2,
+    "private": false,
+    "reactions_count": 0,
+    "stocks_count": 2,
+    "tags": [
+      {
+        "name": "Angular",
+        "versions": []
+      },
+      {
+        "name": "Angular2",
+        "versions": []
+      }
+    ],
+    "title": "Angular2(Angular4)　＞　子コンポーネントをViewChildenで取得して操作する",
+    "updated_at": "2017-08-14T11:26:53+09:00",
+    "url": "https://qiita.com/hedrall/items/c2a179d6ecb898a4a8b1",
+    "page_views_count": 3515,
+    "team_membership": null,
+    "organization_url_name": null,
+    "slide": false
+  }
+]

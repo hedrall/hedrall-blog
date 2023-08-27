@@ -1,12 +1,16 @@
-import { ExternalSiteSettings } from '../../../posts/meta/externalSiteSettings';
-import { ZennPosted } from './posted';
-import { FileId } from '../../../posts/meta/filenames';
+import { ExternalSiteSettings } from '../externalSiteSetting';
 import { build } from './build';
+import { Setting } from '../externalSiteSetting/type';
 
+/**
+ * Zennへ投稿する記事をビルドする
+ *
+ *
+ */
 (async () => {
-  const fileIds = [...Object.values(ZennPosted.items).map((i) => i.fileId), ...Object.keys(ExternalSiteSettings)] as FileId[];
-  for (const id of fileIds) {
-    console.log(`>>> id: ${id}`);
-    await build(id);
+  const settings = Object.values(ExternalSiteSettings).filter(Setting.isEnable);
+  for (const setting of settings) {
+    console.log(`>>> id: ${setting.zenn.slug}`);
+    await build(setting);
   }
 })().catch(console.error);

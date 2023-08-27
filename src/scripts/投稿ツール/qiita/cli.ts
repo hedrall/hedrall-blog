@@ -1,5 +1,5 @@
 import prompts from 'prompts';
-import { ExternalSiteSettings } from '../../../posts/meta/externalSiteSettings';
+import { ExternalSiteSettings } from '../externalSiteSetting';
 import { _Meta as Meta } from '../../../posts/meta/meta';
 import { QiitaTools } from './index';
 import { FileId } from '../../../posts/meta/filenames';

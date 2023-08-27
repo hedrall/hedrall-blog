@@ -1,11 +1,8 @@
-import { FileId } from '../../../posts/meta/filenames';
-import child_process from 'child_process';
 import { _Meta as Meta } from '../../../posts/meta/meta';
-import { ZennPosted } from './posted';
-import { ExternalSiteSettings } from '../../../posts/meta/externalSiteSettings';
 import { loadBody } from '../common';
 import fs from 'fs';
 import path from 'path';
+import { Setting } from '../externalSiteSetting/type';
 
 export type ZennMeta = {
   title: string;
@@ -15,19 +12,15 @@ export type ZennMeta = {
   published: boolean;
 };
 
-export const build = async (fileId: FileId) => {
+export const build = async (setting: Setting.Enable<any>) => {
+  const { fileId } = setting;
+
   // Meta情報
   const meta = Meta[`${fileId}.mdx`];
 
-  // 過去に投稿済みのデータ
-  const posted = ZennPosted.get(fileId);
-
-  // 23/08/22以降 Gitで投稿を管理しているデータ
-  const extSetting = ExternalSiteSettings[fileId];
-
   const zennMeta: ZennMeta = {
     title: meta.title,
-    emoji: extSetting?.emoji || posted.emoji,
+    emoji: setting?.zenn?.emoji,
     type: 'tech',
     topics: meta.tags,
     published: true,
@@ -44,6 +37,6 @@ published: ${zennMeta.published}
 ${loadBody(fileId)}
 `;
 
-  const zennArticleFileName = posted?.slug || fileId;
+  const zennArticleFileName = setting?.zenn.slug;
   fs.writeFileSync(path.resolve(__dirname, `../../../../articles/${zennArticleFileName}.md`), article);
 };
