@@ -20,7 +20,7 @@ export const build = async (setting: Setting.Enable<any>) => {
 
   const zennMeta: ZennMeta = {
     title: meta.title,
-    emoji: setting?.zenn?.emoji,
+    emoji: setting?.zenn?.emoji || '📝',
     type: 'tech',
     topics: meta.tags,
     published: true,
