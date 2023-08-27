@@ -218,6 +218,8 @@ export const ExternalSiteSettings: { [K in FileId]?: Setting<K> } | undefined = 
     },
     qiita: {
       id: 'f2239f98f1c0fdd14b07',
+      url: 'https://qiita.com/hedrall/items/f2239f98f1c0fdd14b07',
+      updatedAt: '2023-08-27T20:42:00+09:00',
     },
   },
   'vr-20220510': {
