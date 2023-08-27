@@ -1,3 +1,5 @@
+/* eslint-disable */
+// prettier-ignore
 export const PostedItems = [
   {
     "qiitaId": "test",

@@ -17,7 +17,11 @@ export namespace QiitaRegistry {
     }
     fs.writeFileSync(
       path.resolve(__dirname, './data.ts'),
-      `export const PostedItems = ${JSON.stringify(PostedItems, null, 2)} satisfies { qiitaId: string, filename: string }[];`,
+      [
+        '/* eslint-disable */',
+        '// prettier-ignore',
+        `export const PostedItems = ${JSON.stringify(PostedItems, null, 2)} satisfies { qiitaId: string, filename: string }[];`,
+      ].join('\n'),
     );
   };
 }
