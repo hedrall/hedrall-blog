@@ -33,6 +33,7 @@ import { Setting } from './type';
 ${code(settings)}; 
 `;
 
+// qiitaへ投稿後のパラメータ
 type Qiita = {
   type: 'qiita';
   id: string;
@@ -54,6 +55,5 @@ export const externalSiteUpdater = async (id: FileId, params: Params) => {
   }
 
   let newCode = template(ExternalSiteSettings);
-  console.log({ newCode });
   fs.writeFileSync(path.resolve(__dirname, './index.ts'), newCode);
 };
