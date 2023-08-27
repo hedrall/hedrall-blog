@@ -2,24 +2,22 @@ import prompts from 'prompts';
 import { ExternalSiteSettings } from '../externalSiteSetting';
 import { _Meta as Meta } from '../../../posts/meta/meta';
 import { QiitaTools } from './index';
-import { FileId } from '../../../posts/meta/filenames';
+import { Setting } from '../externalSiteSetting/type';
 
 const main = async () => {
-  const 投稿可能な記事の一覧 = Object.entries(ExternalSiteSettings)
-    .filter(([, value]) => {
-      return value.enable;
-    })
-    .map(([key]) => key) as FileId[];
-  const { 投稿する記事のfileId } = await prompts({
+  const settings = Object.values(ExternalSiteSettings).filter(Setting.isEnable);
+  const { fileId } = await prompts({
     type: 'select',
-    name: '投稿する記事のfileId',
+    name: 'fileId',
     message: '投稿する記事のfileIdを選択してください',
-    choices: 投稿可能な記事の一覧.map((fileId) => ({ title: fileId, value: fileId, description: Meta[`${fileId}.mdx`].title })),
+    choices: settings.map(({ fileId }) => ({ title: fileId, value: fileId, description: Meta[`${fileId}.mdx`].title })),
   });
 
-  console.log({ 投稿する記事のfileId });
+  const setting = ExternalSiteSettings[fileId];
+  console.log({ fileId });
+  console.table(setting);
 
-  await QiitaTools.upsert(投稿する記事のfileId as FileId);
+  await QiitaTools.upsert(setting);
 };
 
 (async () => {

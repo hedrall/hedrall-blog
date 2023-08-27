@@ -2,29 +2,33 @@ import axios from 'axios';
 import assert from 'assert';
 import { Qiita } from './type';
 import { _Meta } from '../../../posts/meta/meta';
-import { QiitaRegistry } from './registry/投稿済み管理';
 import { loadBody } from '../common';
+import { Setting } from '../externalSiteSetting/type';
+import { externalSiteUpdater } from '../externalSiteSetting/updater';
 import { FileId } from '../../../posts/meta/filenames';
 
 const token = process.env.QIITA_TOKEN;
 assert(token, '環境変数 QIITA_TOKEN が設定されていません。');
 
-export const _upsert = async (id: FileId) => {
+export const _upsert = async <T extends FileId>(setting: Setting.Enable<T>) => {
+  const {
+    fileId,
+    qiita: { id: qiitaId },
+  } = setting;
   // 記事の情報を準備する
-  const meta = _Meta[`${id}.mdx`];
+  const meta = _Meta[`${fileId}.mdx`];
 
-  // APIのリクエストぱらむ
+  // APIのリクエストパラム
   const postParams: Qiita.PostParams = {
     title: meta.title,
-    body: loadBody(id),
+    body: loadBody(fileId),
     tags: meta.tags.map((t) => ({ name: t })),
   };
 
   // APIをコールする
-  const qiitaId = QiitaRegistry.getIdFromFilename(id);
   let apiUrl: string;
   let method: 'post' | 'patch';
-  if (qiitaId) {
+  if (qiitaId !== '未投稿') {
     // 更新
     console.log(`>>> 更新します id: ${qiitaId}`);
     apiUrl = `https://qiita.com/api/v2/items/${qiitaId}`;
@@ -44,7 +48,12 @@ export const _upsert = async (id: FileId) => {
   });
 
   console.log('>>> OK !!!');
+  console.log(res.data.url);
 
-  // QiitaのItemIDを保存する
-  QiitaRegistry.upsertPostedItem(res.data.id, id);
+  externalSiteUpdater(fileId, {
+    type: 'qiita',
+    id: res.data.id,
+    url: res.data.url,
+    updatedAt: res.data.updated_at,
+  });
 };
