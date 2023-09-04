@@ -101,9 +101,9 @@ TypeScriptユーザには自明な話と思いますが、`型`と`値`は別の
 
 モジュール化自体は多くの人が当たり前に実践しているいることと思います。
 
-`値`の世界ではオブジェクトを利用して簡単にモジュール化を行うことができますし、SPA以前の世界ではJSのGlobal汚染が問題になることがしばしばあったので、オブジェクトやIIFEを利用したスコープを制限により、擬似的に名前空間を伴ったモジュール化も実践されています。
+`値`の世界ではオブジェクトを利用して簡単にモジュール化を行うことができます。また、SPA以前の世界ではJSのGlobal汚染が問題になることがしばしばあったので、オブジェクトやIIFEを利用したスコープを制限により、擬似的に名前空間を伴ったモジュール化も実践されています。
 
-一方で、そういったプラクティスは`JavaScript`のものであり、`TypeScritp`の型の世界に直接適用できないことがあります。なぜなら、実は**型のモジュール化方法は2つ**しかありません。 <br/>
+一方で、そういったプラクティスは`JavaScript`のものなので、`TypeScritp`の`型`の領域には適用できないことがあります。なぜなら、実は**型のモジュール化方法は2つ**しかありません。 <br/>
 (より正確にはnamaspaceを発生させる方法です。)
 
 こちらの記事で解説されています。
@@ -127,14 +127,12 @@ summary
 
 この記事で紹介されている通り、`namespace`は確立された機能の一つです。
 
-では、`モジュール名前空間オブジェクト`を利用した方法が推奨される背景にはどお様なことがあるのでしょうか。
-
-推奨理由
+では、`モジュール名前空間オブジェクト`を利用した方法が推奨される背景にはどの様なことがあるのでしょうか。
 
 1. JSの標準機能であること。`namespace`は`TypeScript`専用の機能である。
 2. `namespace`は`RunTime`に影響を与える
 
-一方で、筆者としては以下の様な欠点があると考えています。
+一方で、筆者としては`モジュール名前空間オブジェクト`にも以下の様な欠点があると考えています。
 
 `モジュール名前空間オブジェクト`の欠点
 
@@ -462,7 +460,7 @@ import Membership = User.Membership;
 ```typescript
 // user/membership.ts
 export namespace _Membership {
-    Type = '会員' | '非会員';
+    export type Type = '会員' | '非会員';
 }
 
 // user/index.ts
@@ -471,6 +469,38 @@ export namespace User {
     export import Membership = _Membership;
 }
 ```
+
+## Storybookのビルド (23/09/06追記)
+
+`Storybook`は`Babel`を利用してビルドしていますが、`Babel`が`namespace`と`class`の同名宣言に対応していないため、ビルドエラーが起こる場合ばあります。
+
+その場合は、`swc`でのビルドをONにしてください。
+
+公式から
+https://storybook.js.org/docs/react/configure/babel#swc-alternative-experimental
+
+```js
+// .storybook/main.ts
+
+// Replace your-framework with the webpack-based framework you are using (e.g., react-webpack5)
+import type { StorybookConfig } from '@storybook/your-framework';
+
+const config: StorybookConfig = {
+  framework: {
+    name: '@storybook/your-framework',
+    options: {
+      builder: {
+        useSWC: true,
+      },
+    },
+  },
+  stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
+};
+
+export default config;
+```
+
+ただし、各コンポーネントで`import React from 'react';`を明示的に記載する必要がある様なので、`React`の`import`エラーに遭遇した場合は`preview.js`に`import`を追加してください。
 
 # まとめ
 
