@@ -11,3 +11,7 @@ I so appreciate.
 npm i
 npm run dev
 ```
+
+# TODO
+
+- [ ] 広告の埋め込みを qiita, zenn では外す
