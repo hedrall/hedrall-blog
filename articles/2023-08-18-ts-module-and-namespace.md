@@ -167,15 +167,17 @@ RunTimeへの影響うんぬんへの意見は好みの問題も大きいと思�
 ts
 ```typescript
 namespace A {
-    const a = 'test';
-    type a = 'test'
+    const a = 'A';
+    export const b = 'B';
+    type C = 'C'
 }
 ```
 変換後
 ```javascript
 var A;
 (function (A) {
-  const a = 'test';
+  const a = 'A';
+  A.b = 'B';
 })(A || (A = {}));
 ```
 
