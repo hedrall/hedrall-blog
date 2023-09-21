@@ -504,6 +504,36 @@ export default config;
 
 ただし、各コンポーネントで`import React from 'react';`を明示的に記載する必要がある様なので、`React`の`import`エラーに遭遇した場合は`preview.js`に`import`を追加してください。
 
+# FAQ (おまけ)
+
+本記事の概念を実務で実施する際に、周囲のエンジニアからFBいただいたことを順次追記できればと思っています。
+
+## 型の構造化は `A['b']` の様なアクセスも可能なのでは？ (2023/09/22)
+
+`型をまとめる`という目的に関しては、`namespace`を利用しなくても実現可能です。
+
+```typescript
+type Pet = {
+  Cat: { nakigoe: 'にゃー' },
+  Dog: { nakigoe: 'わん' },
+}
+// 取り出し
+type Cat = Pet['Cat'];
+```
+
+上記の例では、取り出し側の構文が `Pet.Cat` => `Pet['Cat']` になるだけです。
+
+しかし、ユースケースによっては、`Pet`自体を`モジュール`ではなく`エンティティ`として扱いたい場面があります。その場合はオブジェクト型を利用した型定義では対応できないため、やはり `namespace` を利用すると便利です。
+
+```typescript
+namespace Pet {
+  export type Cat = { nakigoe: 'にゃー' };
+  export type Dog = { nakigoe: 'わん' };
+}
+// エンティティの型定義
+type Pet = Pet.Cat | Pet.Dog;
+```
+
 # まとめ
 
 TypeScriptでコーディングすることの**最大のメリット**は、型を利用することで**コードの保守性を高めること**であると思っています。一方で、`JavaScript`には**モジュールの概念が曖昧**に存在しているために、論理構造の整理が適切に進められていないケースを見かけます。
@@ -517,5 +547,23 @@ TypeScriptでコーディングすることの**最大のメリット**は、型
 上記の知見が少しでもみなさんのお役に立てば幸いです。
 
 末筆ながら、長い記事になりましたが、読んでいただいたみなさんありがとうございましたmm
+
+```typescript
+type aCommon = {};
+type a = {
+  b: aCommon & {},
+  c: aCommon & {},
+}
+```
+
+```typescript
+
+namespace a {
+  type aCommon = {};
+  export type b = aCommon & {};
+  export type c = aCommon & {};
+}
+type a = a.b | a.c;
+```
 
   
