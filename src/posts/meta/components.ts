@@ -4,6 +4,7 @@ import { _PostFileName } from './filenames';
 import React from 'react';
 
 export const _PostComponents = {
+  '2023-10-24-no-more-rest.mdx': dynamic(() => import('./2023-10-24-no-more-rest.mdx')),
   '2023-08-18-ts-module-and-namespace.mdx': dynamic(() => import('./2023-08-18-ts-module-and-namespace.mdx')),
   'ts-null-coding.mdx': dynamic(() => import('./ts-null-coding.mdx')),
   'doc-creation.mdx': dynamic(() => import('./doc-creation.mdx')),

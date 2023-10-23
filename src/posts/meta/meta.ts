@@ -11,6 +11,14 @@ export type _Meta = {
 };
 
 export const _Meta: { [K in _PostFileName]: _Meta & { slug: _PostFileName extends `${infer N}.mdx` ? N : string } } = {
+  '2023-10-24-no-more-rest.mdx': {
+    slug: '2023-10-24-no-more-rest',
+    title: 'もう、REST API なんてよばないで〜',
+    date: '2023-10-24',
+    author: 'hedrall',
+    image: '/images/api/icon.png',
+    tags: ['open-api'],
+  },
   '2023-08-18-ts-module-and-namespace.mdx': {
     slug: '2023-08-18-ts-module-and-namespace',
     title: 'TypeScriptで型と値を一体化し、モジュールを形成する重要性と手法',
