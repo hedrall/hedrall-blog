@@ -24,6 +24,17 @@ export const ExternalSiteSettings: { [K in FileId]?: Setting<K> } | undefined = 
       updatedAt: '2023-09-22T08:03:32+09:00',
     },
   },
+  '2023-10-24-no-more-rest': {
+    fileId: '2023-10-24-no-more-rest',
+    enable: true,
+    zenn: {
+      emoji: '',
+      slug: '2023-10-24-no-more-rest',
+    },
+    qiita: {
+      id: '2023-10-24-no-more-rest',
+    },
+  },
   'ts-null-coding': {
     fileId: 'ts-null-coding',
     enable: true,
@@ -241,4 +252,3 @@ export const ExternalSiteSettings: { [K in FileId]?: Setting<K> } | undefined = 
     },
   },
 };
-; 
