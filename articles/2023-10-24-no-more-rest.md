@@ -1,5 +1,5 @@
 ---
-title: "もう、REST API なんてよばないで〜"
+title: "もう REST API なんてよばないで〜"
 emoji: "📝"
 type: "tech"
 topics: ["open-api"]

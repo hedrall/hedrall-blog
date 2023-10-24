@@ -13,7 +13,7 @@ export type _Meta = {
 export const _Meta: { [K in _PostFileName]: _Meta & { slug: _PostFileName extends `${infer N}.mdx` ? N : string } } = {
   '2023-10-24-no-more-rest.mdx': {
     slug: '2023-10-24-no-more-rest',
-    title: 'もう、REST API なんてよばないで〜',
+    title: 'もう REST API なんてよばないで〜',
     date: '2023-10-24',
     author: 'hedrall',
     image: '/images/api/icon.png',
