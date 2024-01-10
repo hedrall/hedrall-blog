@@ -73,7 +73,7 @@ TypeScriptユーザには自明な話と思いますが、`型`と`値`は別の
 - 型: 静的解析 (TS only)
 - 値: RunTime (JS)
 
-これによって、JavaScript`で書かれたライブラリに外側`から`TS`の型をつけることもできる様になっています。
+これによって、`JavaScript`で書かれたライブラリに外側から`TS`の型をつけることもできる様になっています。
 
 ([DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped)など)
 
