@@ -476,7 +476,7 @@ export namespace User {
 
 ## Storybookのビルド (23/09/06追記)
 
-`Storybook`は`Babel`を利用してビルドしていますが、`Babel`が`namespace`と`class`の同名宣言に対応していないため、ビルドエラーが起こる場合ばあります。
+`Storybook`は`Babel`を利用してビルドしていますが、`Babel`が`namespace`と`class`の同名宣言に対応していないため、ビルドエラーが起こる場合があります。
 
 その場合は、`swc`でのビルドをONにしてください。
 
@@ -528,11 +528,12 @@ type Cat = Pet['Cat'];
 しかし、ユースケースによっては、`Pet`自体を`モジュール`ではなく`エンティティ`として扱いたい場面があります。その場合はオブジェクト型を利用した型定義では対応できないため、やはり `namespace` を利用すると便利です。
 
 ```typescript
+// namespaceがモジュールとしてのPet
 namespace Pet {
   export type Cat = { nakigoe: 'にゃー' };
   export type Dog = { nakigoe: 'わん' };
 }
-// エンティティの型定義
+// エンティティとしてのPetの型定義
 type Pet = Pet.Cat | Pet.Dog;
 ```
 
@@ -549,23 +550,5 @@ TypeScriptでコーディングすることの**最大のメリット**は、型
 上記の知見が少しでもみなさんのお役に立てば幸いです。
 
 末筆ながら、長い記事になりましたが、読んでいただいたみなさんありがとうございましたmm
-
-```typescript
-type aCommon = {};
-type a = {
-  b: aCommon & {},
-  c: aCommon & {},
-}
-```
-
-```typescript
-
-namespace a {
-  type aCommon = {};
-  export type b = aCommon & {};
-  export type c = aCommon & {};
-}
-type a = a.b | a.c;
-```
 
   
