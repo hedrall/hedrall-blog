@@ -12,7 +12,17 @@ import { Setting } from './type';
  */
 export const ExternalSiteSettings: { [K in FileId]?: Setting<K> } | undefined = {
   '2024-01-17-not-graphql-on-sc-sys': {
-    enable: false,
+    fileId: '2024-01-17-not-graphql-on-sc-sys',
+    enable: true,
+    zenn: {
+      emoji: '🤔',
+      slug: '2024-01-17-not-graphql-on-sc-sys',
+    },
+    qiita: {
+      id: 'b2abaaf44ba6dc305b52',
+      url: 'https://qiita.com/hedrall/items/b2abaaf44ba6dc305b52',
+      updatedAt: '2024-01-17T07:56:00+09:00',
+    },
   },
   '2023-10-24-no-more-rest': {
     fileId: '2023-10-24-no-more-rest',

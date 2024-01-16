@@ -528,7 +528,7 @@ type Cat = Pet['Cat'];
 しかし、ユースケースによっては、`Pet`自体を`モジュール`ではなく`エンティティ`として扱いたい場面があります。その場合はオブジェクト型を利用した型定義では対応できないため、やはり `namespace` を利用すると便利です。
 
 ```typescript
-// namespaceがモジュールとしてのPet
+// namespaceがモジュールとしてのPetの定義
 namespace Pet {
   export type Cat = { nakigoe: 'にゃー' };
   export type Dog = { nakigoe: 'わん' };
