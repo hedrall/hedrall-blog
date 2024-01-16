@@ -1,3 +1,5 @@
+/* eslint-disable */
+// prettier-ignore
 export default {
   '2024-01-17-not-graphql-on-sc-sys': {
     fileId: '2024-01-17-not-graphql-on-sc-sys',
