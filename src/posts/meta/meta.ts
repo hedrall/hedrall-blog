@@ -8,7 +8,8 @@ export type _Meta = {
   date: string;
   author: string;
   image: string;
-  tags: readonly string[];
+  tags: string[];
 };
 
-export const _Meta: { [K in _PostFileName]: _Meta & { slug: _PostFileName extends `${infer N}.mdx` ? N : string } } = _meta;
+type Def = { [K in _PostFileName]: _Meta & { slug: _PostFileName extends `${infer N}.mdx` ? N : string } };
+export const _Meta: Def = _meta as any;
