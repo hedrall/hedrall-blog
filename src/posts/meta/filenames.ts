@@ -1,4 +1,5 @@
 export const _PostFileName = [
+  '2024-01-17-not-graphql-on-sc-sys.mdx',
   '2023-10-24-no-more-rest.mdx',
   '2023-08-18-ts-module-and-namespace.mdx',
   '20221120-dependency-cruiser.mdx',

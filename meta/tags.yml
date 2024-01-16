@@ -35,6 +35,8 @@ tags:
     name: Api
   - slug: open-api
     name: OpenApi
+  - slug: graphql
+    name: Graph QL
   - slug: node.js
     name: Node.js
   - slug: test

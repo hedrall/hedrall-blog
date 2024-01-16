@@ -11,6 +11,14 @@ export type _Meta = {
 };
 
 export const _Meta: { [K in _PostFileName]: _Meta & { slug: _PostFileName extends `${infer N}.mdx` ? N : string } } = {
+  '2024-01-17-not-graphql-on-sc-sys.mdx': {
+    slug: '2024-01-17-not-graphql-on-sc-sys',
+    title: 'サーバクライアント型のシステムでGraphQLの採用を避けた方が良いと思う理由',
+    date: '2024-01-17',
+    author: 'hedrall',
+    image: '/images/graphql/logo.png',
+    tags: ['graphql', 'open-api'],
+  },
   '2023-10-24-no-more-rest.mdx': {
     slug: '2023-10-24-no-more-rest',
     title: 'GraphQLとOpenAPIを比較する時は「REST API」に注意する',
