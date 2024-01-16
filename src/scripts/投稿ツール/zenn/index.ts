@@ -8,7 +8,7 @@ import { Setting } from '../externalSiteSetting/type';
  *
  */
 (async () => {
-  const settings = Object.values(ExternalSiteSettings).filter(Setting.isEnable);
+  const settings = Object.values(ExternalSiteSettings).filter(Setting.isEnable) as Setting.Enable<any>[];
   for (const setting of settings) {
     console.log(`>>> id: ${setting.zenn.slug}`);
     await build(setting);

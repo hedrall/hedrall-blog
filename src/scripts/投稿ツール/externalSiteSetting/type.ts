@@ -20,8 +20,8 @@ export namespace Setting {
     zenn: ZennSetting;
     qiita: QiitaSetting;
   };
-  export const isEnable = <T extends FileId>(setting: Setting<T>): setting is Setting.Enable<T> => {
+  export function isEnable<T extends FileId>(setting: Setting<T>): setting is Setting.Enable<T> {
     return setting.enable;
-  };
+  }
 }
 export type Setting<ID extends FileId> = Setting.Disable | Setting.Enable<ID>;

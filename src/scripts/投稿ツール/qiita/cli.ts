@@ -5,7 +5,7 @@ import { QiitaTools } from './index';
 import { Setting } from '../externalSiteSetting/type';
 
 const main = async () => {
-  const settings = Object.values(ExternalSiteSettings).filter(Setting.isEnable);
+  const settings = Object.values(ExternalSiteSettings).filter((i) => Setting.isEnable(i)) as Setting.Enable<any>[];
   const { fileId } = await prompts({
     type: 'select',
     name: 'fileId',

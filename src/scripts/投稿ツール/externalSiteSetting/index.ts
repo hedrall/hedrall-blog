@@ -11,6 +11,9 @@ import { Setting } from './type';
  * 旧記事は足さない
  */
 export const ExternalSiteSettings: { [K in FileId]?: Setting<K> } | undefined = {
+  '2024-01-17-not-graphql-on-sc-sys': {
+    enable: false,
+  },
   '2023-10-24-no-more-rest': {
     fileId: '2023-10-24-no-more-rest',
     enable: true,
@@ -254,4 +257,3 @@ export const ExternalSiteSettings: { [K in FileId]?: Setting<K> } | undefined = 
     },
   },
 };
-; 
