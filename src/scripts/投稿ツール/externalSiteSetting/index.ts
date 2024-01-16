@@ -21,7 +21,7 @@ export const ExternalSiteSettings: { [K in FileId]?: Setting<K> } | undefined = 
     qiita: {
       id: 'a1a486993ff000eb6809',
       url: 'https://qiita.com/hedrall/items/a1a486993ff000eb6809',
-      updatedAt: '2023-12-14T08:53:34+09:00',
+      updatedAt: '2024-01-11T08:04:22+09:00',
     },
   },
   '2023-08-18-ts-module-and-namespace': {
@@ -34,7 +34,7 @@ export const ExternalSiteSettings: { [K in FileId]?: Setting<K> } | undefined = 
     qiita: {
       id: '61a322b8fc7b98208274',
       url: 'https://qiita.com/hedrall/items/61a322b8fc7b98208274',
-      updatedAt: '2024-01-11T08:01:36+09:00',
+      updatedAt: '2024-01-11T08:04:25+09:00',
     },
   },
   'ts-null-coding': {
