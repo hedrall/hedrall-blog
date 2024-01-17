@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build:zenn": "node -r esbuild-register ./src/scripts/投稿ツール/zenn/index.ts",
+    "create:new:post": "node -r esbuild-register ./src/scripts/新規記事作成.ts",
     "post:qiita": "node -r esbuild-register ./src/scripts/投稿ツール/qiita/cli.ts",
     "build": "next build",
     "start": "next start",
