@@ -4,6 +4,7 @@
   "rules": {
     "indent": ["error", 2],
     "quotes": [2, "single", { "avoidEscape": true }],
-    "prettier/prettier": ["error", { "singleQuote": true }]
+    "prettier/prettier": ["error", { "singleQuote": true }],
+    "@typescript-eslint/no-namespace": "off"
   }
 }
