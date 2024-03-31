@@ -1,6 +1,16 @@
 /* eslint-disable */
 // prettier-ignore
 export default {
+  "2024-03-20-ts-class-def.mdx": {
+    "slug": "2024-03-20-ts-class-def",
+    "title": "[TypeScript]: モデル定義、上からするか、下からするか？",
+    "date": "2024-04-01",
+    "author": "hedrall",
+    "image": "/images/typescript/logo.png",
+    "tags": [
+      "typescript"
+    ]
+  },
   "2024-01-17-not-graphql-on-sc-sys.mdx": {
     "slug": "2024-01-17-not-graphql-on-sc-sys",
     "title": "サーバクライアント型のシステムでGraphQLの採用を避けた方が良いと思う理由",

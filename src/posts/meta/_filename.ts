@@ -1,6 +1,7 @@
 /* eslint-disable */
 // prettier-ignore
 export default [
+  '2024-03-20-ts-class-def.mdx',
   "2024-01-17-not-graphql-on-sc-sys.mdx",
   "2023-10-24-no-more-rest.mdx",
   "2023-08-18-ts-module-and-namespace.mdx",
