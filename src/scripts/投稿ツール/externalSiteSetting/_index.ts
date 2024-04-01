@@ -1,6 +1,17 @@
 /* eslint-disable */
 // prettier-ignore
 export default {
+  "2024-03-20-ts-class-def": {
+    "fileId": "2024-03-20-ts-class-def",
+    "enable": true,
+    "zenn": {
+      "emoji": "🤔",
+      "slug": "2024-03-20-ts-class-def"
+    },
+    "qiita": {
+      "id": "未投稿",
+    }
+  },
   "2024-01-17-not-graphql-on-sc-sys": {
     "fileId": "2024-01-17-not-graphql-on-sc-sys",
     "enable": true,
