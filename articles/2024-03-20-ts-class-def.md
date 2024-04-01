@@ -370,7 +370,7 @@ type Task = TodoTask | CompletedTask;
 このように、Object Literal型はインターセクション型(`&`)を利用することで**Propertyレベルで因数分解**することができます。
 必要に応じて分解してあげることで、より重要な特徴が際立った表現をすることができます。
 
-# 6.子の型を制限する
+### 6.子の型を制限する
 
 Taskの子としては様々なタイプのTaskを追加することができますが、守って欲しいルールとして、必ず`status`を持って欲しいということがあります。
 必要に応じて、statusの定義を`Common`にジェネリクスとして追加することでガイドしていくことができます。
@@ -382,7 +382,7 @@ type CompletedTask = Common<'completed'> & { completedAt: Date };
 type Task = TodoTask | CompletedTask;
 ````
 
-# 7.Enum型を利用する
+### 7.Enum型を利用する
 
 Taskのstatusの型をどこかで再利用したくなることがあります。
 その場合、オリジナルの定義はなるべく一箇所にまとめた方が保守性が高く無難であるため、
@@ -407,7 +407,7 @@ const status: Task.Status = 'todo';
 
 namespaceの活用方法に関しては以前[記事](https://qiita.com/hedrall/items/61a322b8fc7b98208274)を書いているので、もしよければ参考にしてみて下さい
 
-# まとめ
+## まとめ
 
 TypeScriptでのモデル定義方法について、上から定義するか、下から定義するか、classかObject Literalかという観点から検討してきました。
 今回紹介したTaskのように、親クラスに対して子クラスが有限なバリエーションを持つ関係におけるモデル定義については、結論として、**下からObject Literal**で定義する方法が最適であると考えました。
