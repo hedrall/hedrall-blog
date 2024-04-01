@@ -21,7 +21,7 @@ export const ExternalSiteSettings: { [K in FileId]?: Setting<K> } | undefined = 
     qiita: {
       id: '5d2969074b2e68045a6c',
       url: 'https://qiita.com/hedrall/items/5d2969074b2e68045a6c',
-      updatedAt: '2024-04-01T09:18:19+09:00',
+      updatedAt: '2024-04-01T09:22:02+09:00',
     },
   },
   '2024-01-17-not-graphql-on-sc-sys': {

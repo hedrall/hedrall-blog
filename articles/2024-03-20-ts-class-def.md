@@ -171,7 +171,7 @@ const b: B = a; // OK: aとbは構造が同じ
 // Kotlinの世界 (公称型)
 class A (val prop1: String)
 class B (val prop1: String)
-val a: A = new A("test")
+val a = A("test")
 val b: B = a // NG: aとbはクラス(血統)が違う
 ```
 
