@@ -12,6 +12,14 @@ export type ZennMeta = {
   published: boolean;
 };
 
+const filterBody = (body: string) => {
+  const lines = body.split('\n');
+  return lines
+    .filter((line) => {
+      return !line.includes('dangerouslySetInnerHTML');
+    })
+    .join('\n');
+};
 export const build = async (setting: Setting.Enable<any>) => {
   const { fileId } = setting;
 
@@ -34,7 +42,7 @@ topics: [${zennMeta.topics.map((t) => `"${t}"`).join(', ')}]
 published: ${zennMeta.published}
 ---
 
-${loadBody(fileId)}
+${filterBody(loadBody(fileId))}
 `;
 
   const zennArticleFileName = setting?.zenn.slug;
