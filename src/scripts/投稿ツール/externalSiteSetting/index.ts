@@ -93,6 +93,8 @@ export const ExternalSiteSettings: { [K in FileId]?: Setting<K> } | undefined = 
     },
     qiita: {
       id: 'e834f4628fc4ff7de1fe',
+      url: 'https://qiita.com/hedrall/items/e834f4628fc4ff7de1fe',
+      updatedAt: '2024-06-03T08:58:00+09:00',
     },
   },
   '20221120-dependency-cruiser': {
