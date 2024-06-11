@@ -8,6 +8,7 @@ import { externalSiteUpdater } from '../externalSiteSetting/updater';
 import { FileId } from '../../../posts/meta/filenames';
 
 const token = process.env.QIITA_TOKEN;
+console.log({ token });
 assert(token, '環境変数 QIITA_TOKEN が設定されていません。');
 
 export const _upsert = async <T extends FileId>(setting: Setting.Enable<T>) => {

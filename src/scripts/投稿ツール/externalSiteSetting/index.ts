@@ -11,6 +11,19 @@ import { Setting } from './type';
  * 旧記事は足さない
  */
 export const ExternalSiteSettings: { [K in FileId]?: Setting<K> } | undefined = {
+  '2024-06-11-ddd-spec': {
+    fileId: '2024-06-11-ddd-spec',
+    enable: true,
+    zenn: {
+      emoji: '📗',
+      slug: '2024-06-11-ddd-spec',
+    },
+    qiita: {
+      id: 'b2819812d8dc006f99b2',
+      url: 'https://qiita.com/hedrall/items/b2819812d8dc006f99b2',
+      updatedAt: '2024-06-11T15:45:33+09:00',
+    },
+  },
   '2024-03-20-ts-class-def': {
     fileId: '2024-03-20-ts-class-def',
     enable: true,
