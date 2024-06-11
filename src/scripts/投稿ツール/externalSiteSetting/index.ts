@@ -21,7 +21,7 @@ export const ExternalSiteSettings: { [K in FileId]?: Setting<K> } | undefined = 
     qiita: {
       id: 'b2819812d8dc006f99b2',
       url: 'https://qiita.com/hedrall/items/b2819812d8dc006f99b2',
-      updatedAt: '2024-06-11T16:15:14+09:00',
+      updatedAt: '2024-06-11T16:16:05+09:00',
     },
   },
   '2024-03-20-ts-class-def': {
