@@ -5,7 +5,7 @@ AlloyDB には踏み台サーバを利用して接続してみたので、方法
 
 ## 構成
 
-[!image](https://github.com/user-attachments/assets/5b9a2995-477a-4b0b-a958-a2fd12a43037)
+![image](https://github.com/user-attachments/assets/5b9a2995-477a-4b0b-a958-a2fd12a43037)
 
 踏み台サーバは VPC 内にありますが、`Identity-Aware Proxy (IAP)` を利用することでローカルPCから簡単に SSH 接続することができます。
 
@@ -20,7 +20,7 @@ AlloyDB は Google Cloud が管理するサービスプロデューサー VPC �
 
 こちらに記載の通り、`35.235.240.0/20` から 22 番ポートでのアクセスを許可してください。
 
-[!image](https://github.com/user-attachments/assets/a3f6f94c-5115-4e03-9986-e7097ab413b2)
+![image](https://github.com/user-attachments/assets/a3f6f94c-5115-4e03-9986-e7097ab413b2)
 
 
 ## VM インスタンスの起動
@@ -31,7 +31,7 @@ AlloyDB は Google Cloud が管理するサービスプロデューサー VPC �
 VPCに配置するため、<br/>
 `詳細オプション - ネットワーキング - ネットワーク インターフェース` の設定を追加するようにしてください。
 
-[!image](https://github.com/user-attachments/assets/36877cfa-ea83-4b17-9aed-6627c1fe4824)
+![image](https://github.com/user-attachments/assets/36877cfa-ea83-4b17-9aed-6627c1fe4824)
 
 ## サービスアカウントの作成
 
@@ -45,7 +45,7 @@ AlloyDB Auth Proxy が利用するサービスアカウントを作成します�
 
 また、AlloyDBにアクセスするユーザにもなるので、AlloyDB にユーザを追加しておきます。
 
-[!image](https://github.com/user-attachments/assets/59b5894a-0a5e-45f5-b84c-a7ab44b47aea)
+![image](https://github.com/user-attachments/assets/59b5894a-0a5e-45f5-b84c-a7ab44b47aea)
 
 
 ## 踏み台サーバに SSH する
