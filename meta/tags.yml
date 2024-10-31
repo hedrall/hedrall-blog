@@ -1,16 +1,16 @@
 tags:
-#  - slug: document
-#    name: document
-#  - slug: mock
-#    name: mock
-#  - slug: style
-#    name: style
-#  - slug: license
-#    name: license
-#  - slug: mdx
-#    name: mdx
-#  - slug: markdown
-#    name: markdown
+  #  - slug: document
+  #    name: document
+  #  - slug: mock
+  #    name: mock
+  #  - slug: style
+  #    name: style
+  #  - slug: license
+  #    name: license
+  #  - slug: mdx
+  #    name: mdx
+  #  - slug: markdown
+  #    name: markdown
   - slug: front
     name: フロント
   - slug: infra
@@ -51,3 +51,5 @@ tags:
     name: SPA
   - slug: doc
     name: Doc
+  - slug: Google Cloud
+    name: Google Cloud
