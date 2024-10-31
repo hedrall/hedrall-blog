@@ -1,6 +1,16 @@
 /* eslint-disable */
 // prettier-ignore
 export default {
+  '2024-11-01-alloydb-bastion.mdx': {
+    'slug': '2024-11-01-alloydb-bastion',
+    'title': 'AlloyDB へ 踏み台サーバを経由して接続する方法',
+    'date': '2024-11-01',
+    'author': 'hedrall',
+    'image': '/images/google/logo.png',
+    'tags': [
+      'Google Cloud',
+    ],
+  },
   '2024-06-11-ddd-spec.mdx': {
     'slug': '2024-06-11-ddd-spec',
     'title': '[DDD in TS]: 意外と便利な「仕様」を理解する',

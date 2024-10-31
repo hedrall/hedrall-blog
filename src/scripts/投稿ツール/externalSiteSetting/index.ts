@@ -11,6 +11,20 @@ import { Setting } from './type';
  * 旧記事は足さない
  */
 export const ExternalSiteSettings: { [K in FileId]?: Setting<K> } | undefined = {
+  '2024-11-01-alloydb-bastion': {
+    fileId: '2024-11-01-alloydb-bastion',
+    enable: true,
+    zenn: {
+      emoji: '📗',
+      slug: '2024-11-01-alloydb-bastion',
+      publication_name: 'righttouch',
+    },
+    qiita: {
+      id: 'b2819812d8dc006f99b2',
+      url: 'https://qiita.com/hedrall/items/b2819812d8dc006f99b2',
+      updatedAt: '2024-06-11T16:16:05+09:00',
+    },
+  },
   '2024-06-11-ddd-spec': {
     fileId: '2024-06-11-ddd-spec',
     enable: true,
@@ -295,4 +309,4 @@ export const ExternalSiteSettings: { [K in FileId]?: Setting<K> } | undefined = 
     },
   },
 };
-; 
+;

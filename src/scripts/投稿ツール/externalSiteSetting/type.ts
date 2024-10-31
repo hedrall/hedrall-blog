@@ -4,6 +4,7 @@ type ZennSetting = {
   // zenn上での記事のID
   slug: string;
   emoji?: string;
+  publication_name?: string;
 };
 type QiitaSetting = {
   id: string | '未投稿';
@@ -20,6 +21,7 @@ export namespace Setting {
     zenn: ZennSetting;
     qiita: QiitaSetting;
   };
+
   export function isEnable<T extends FileId>(setting: Setting<T>): setting is Setting.Enable<T> {
     return setting.enable;
   }

@@ -4,6 +4,7 @@ import { _PostFileName } from './filenames';
 import React from 'react';
 
 export const _PostComponents = {
+  '2024-11-01-alloydb-bastion.mdx': dynamic(() => import('../2024-11-01-alloydb-bastion.mdx')),
   '2024-06-11-ddd-spec.mdx': dynamic(() => import('../2024-06-11-ddd-spec.mdx')),
   '2024-03-20-ts-class-def.mdx': dynamic(() => import('../2024-03-20-ts-class-def.mdx')),
   '2024-01-17-not-graphql-on-sc-sys.mdx': dynamic(() => import('../2024-01-17-not-graphql-on-sc-sys.mdx')),
