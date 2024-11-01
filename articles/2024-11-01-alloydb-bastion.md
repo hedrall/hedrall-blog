@@ -49,9 +49,9 @@ VPCに配置するため、<br/>
 
 AlloyDB Auth Proxy が利用するサービスアカウントを作成します。必要な権限は以下の通りです。
 
-- roles/alloydb.databaseUser
-- roles/serviceusage.serviceUsageConsumer
-- roles/alloydb.client
+- `roles/alloydb.databaseUser`
+- `roles/serviceusage.serviceUsageConsumer`
+- `roles/alloydb.client`
 
 作成したら、JSON 形式で key ファイルをダウンロードしておきます。
 
